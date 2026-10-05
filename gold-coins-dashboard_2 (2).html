@@ -1,0 +1,1234 @@
+<title>Gold Coins Marketing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* Layout: sticky bar (brand, section nav, period switch) → navy hero with headline numbers → KPI grid → infographic "money in, sales out" → one band per channel → actions */
+:root{
+  --bg:#f2f4f9; --surface:#ffffff; --surface-2:#e9edf5; --line:#dde3ee;
+  --ink:#0d1726; --ink-2:#3d4a5f; --ink-3:#6b778c;
+  --accent:#e08a00; --accent-soft:#fdf0d9; --accent-ink:#8a5200;
+  --navy:#0b1830; --navy-2:#16305a; --hero-ink:#f5f1e6; --hero-ink-2:#b9c4d8; --saffron:#f4a93b; --teal-glow:#2bd3b6;
+  --s1:#2a6fdb; --s2:#e4572e; --s3:#0f9d8a; --s4:#d99100; --s5:#c2417e; --s7:#6d4fd1; --muted-series:#b8c1d1;
+  --good:#0e7a4a; --good-bg:#dcf3e7; --bad:#c0352a; --bad-bg:#fde3df; --warn:#9a5c00; --warn-bg:#fdefd2;
+  --shadow:0 1px 2px rgba(13,23,38,.06),0 6px 18px -10px rgba(13,23,38,.18);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#080e1a; --surface:#111a2b; --surface-2:#18233a; --line:#24314b;
+  --ink:#edf1f8; --ink-2:#b4bfd3; --ink-3:#8290a8;
+  --accent:#f4a93b; --accent-soft:#3a2a10; --accent-ink:#f8c77a;
+  --navy:#0a1428; --navy-2:#142a50; --hero-ink:#f5f1e6; --hero-ink-2:#aab6cc;
+  --s1:#4d8ae8; --s2:#e0623a; --s3:#14a892; --s4:#c08a00; --s5:#d0558e; --s7:#8b74e6; --muted-series:#3a475f;
+  --good:#5fd39a; --good-bg:#11301f; --bad:#ff8a7a; --bad-bg:#3a1a17; --warn:#f3b552; --warn-bg:#36290f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px -12px rgba(0,0,0,.6);
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#080e1a; --surface:#111a2b; --surface-2:#18233a; --line:#24314b;
+  --ink:#edf1f8; --ink-2:#b4bfd3; --ink-3:#8290a8;
+  --accent:#f4a93b; --accent-soft:#3a2a10; --accent-ink:#f8c77a;
+  --navy:#0a1428; --navy-2:#142a50; --hero-ink:#f5f1e6; --hero-ink-2:#aab6cc;
+  --s1:#4d8ae8; --s2:#e0623a; --s3:#14a892; --s4:#c08a00; --s5:#d0558e; --s7:#8b74e6; --muted-series:#3a475f;
+  --good:#5fd39a; --good-bg:#11301f; --bad:#ff8a7a; --bad-bg:#3a1a17; --warn:#f3b552; --warn-bg:#36290f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px -12px rgba(0,0,0,.6);
+  color-scheme:dark;}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:1260px;margin:0 auto;padding-inline:20px;padding-block:0 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.12}
+h1{font-size:clamp(1.7rem,4vw,2.7rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.2rem,2.4vw,1.55rem);font-weight:700;letter-spacing:-.005em}
+h3{font-size:.98rem;font-weight:600;font-family:var(--f-body)}
+p{margin:0}
+.num,td.n,th.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+
+/* top bar */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1260px;margin:0 auto;padding:10px 20px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:10px;align-items:center;min-width:0}
+.coin{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe29a,#d48d0f 70%);box-shadow:inset 0 0 0 3px rgba(255,255,255,.3),0 2px 8px -2px rgba(212,141,15,.6);flex:none}
+.brand b{font-family:var(--f-display);font-size:1rem;display:block;line-height:1.2}
+.brand span{font-size:.75rem;color:var(--ink-3)}
+.months{display:flex;gap:3px;background:var(--surface-2);padding:3px;border-radius:10px;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.months::-webkit-scrollbar{display:none}
+.months button{font:500 .82rem var(--f-body);border:0;background:transparent;color:var(--ink-2);padding:6px 11px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.months button[aria-pressed="true"]{background:var(--navy);color:var(--hero-ink);box-shadow:0 2px 6px -2px rgba(11,24,48,.5)}
+.months small{font-size:.62rem;opacity:.75;margin-left:3px}
+.secnav{max-width:1260px;margin:0 auto;padding:0 20px 8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.secnav::-webkit-scrollbar{display:none}
+.secnav a{flex:none;font:500 .78rem var(--f-body);color:var(--ink-2);text-decoration:none;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.secnav a:hover{border-color:var(--accent);color:var(--ink)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* hero */
+.intro{margin-block:22px 18px;padding:34px 34px 28px;border-radius:22px;color:var(--hero-ink);background:
+  radial-gradient(60% 90% at 100% 0%,rgba(43,211,182,.18),transparent 60%),
+  radial-gradient(50% 80% at 0% 100%,rgba(244,169,59,.16),transparent 60%),
+  linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);position:relative;overflow:hidden;display:grid;gap:24px}
+.intro::after{content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;border:34px solid rgba(244,169,59,.10);pointer-events:none}
+.intro-top{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:end}
+.intro .eyebrow{color:var(--saffron)}
+.intro h1{color:var(--hero-ink);margin-top:8px}
+.intro p.lede{color:var(--hero-ink-2);margin-top:10px;max-width:62ch;font-size:.98rem}
+.sources{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:var(--hero-ink);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.dot.ok{background:var(--teal-glow)} .dot.part{background:var(--saffron)} .dot.no{border:1.5px solid var(--hero-ink-2)}
+.herostats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.12);border-radius:14px;overflow:hidden;position:relative;z-index:1}
+.herostats div{background:rgba(9,20,40,.55);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.herostats b{font:700 clamp(1.3rem,3vw,2rem) var(--f-display);color:#fff;letter-spacing:-.01em}
+.herostats span{font-size:.75rem;color:var(--hero-ink-2)}
+.herostats em{font-style:normal;color:var(--saffron)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;min-width:0;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--k,var(--s1))}
+.kpi .kh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.spark{width:84px;height:30px;flex:none}
+.kpi .v{font-family:var(--f-display);font-size:1.8rem;font-weight:700;line-height:1.05;letter-spacing:-.01em}
+.kpi .sub{font-size:.76rem;color:var(--ink-3)}
+.delta{display:inline-flex;align-items:center;gap:4px;font:500 .74rem var(--f-mono);padding:2px 7px;border-radius:6px;width:max-content;max-width:100%}
+.delta.up{color:var(--good);background:var(--good-bg)} .delta.down{color:var(--bad);background:var(--bad-bg)}
+.delta.flat{color:var(--ink-2);background:var(--surface-2)} .delta.warnd{color:var(--warn);background:var(--warn-bg)}
+.kpi.na .v{color:var(--ink-3);font-size:1.25rem}
+
+/* bands & cards */
+section.band{margin-top:52px;scroll-margin-top:110px}
+.band-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px 24px;margin-bottom:16px}
+.band-head > div:first-child{display:flex;flex-direction:column;gap:4px}
+.band-head .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent-ink)}
+.band-head .eyebrow::before{content:"";width:18px;height:3px;border-radius:2px;background:var(--accent)}
+.band-head p{color:var(--ink-2);font-size:.88rem;max-width:66ch}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g21{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;min-width:0;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.cap{font-size:.8rem;color:var(--ink-3)}
+.chart{position:relative;height:270px}
+.chart.tall{height:330px} .chart.short{height:210px}
+.insight{font-size:.86rem;color:var(--ink-2);background:var(--accent-soft);border-radius:10px;padding:9px 12px}
+.insight b{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.cardhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end}
+
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-inline:-4px;padding-inline:4px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap}
+tbody tr:hover td{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.good{color:var(--good);background:var(--good-bg)} .pill.bad{color:var(--bad);background:var(--bad-bg)} .pill.warn{color:var(--warn);background:var(--warn-bg)} .pill.neutral{color:var(--ink-2);background:var(--surface-2)}
+
+.big{display:flex;flex-direction:column;gap:2px;min-width:0}
+.big .v{font-family:var(--f-display);font-size:clamp(1.6rem,3vw,2.3rem);font-weight:700;line-height:1}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabbtn{font:500 .76rem var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink-2);padding:5px 11px;border-radius:999px;cursor:pointer}
+.tabbtn[aria-pressed="true"]{background:var(--navy);color:var(--hero-ink);border-color:var(--navy)}
+
+/* infographic: money in, sales out */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.3fr);gap:18px;align-items:stretch}
+.flowcol{display:flex;flex-direction:column;gap:10px}
+.flowcol h3{display:flex;align-items:center;gap:8px}
+.flowcol h3 i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-size:.8rem;color:#fff}
+.inv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--surface-2)}
+.inv b{font:700 1.25rem var(--f-display)}
+.inv span{font-size:.8rem;color:var(--ink-2)}
+.inv small{grid-column:1/-1;font-size:.72rem;color:var(--ink-3)}
+.inv .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.inv .bar i{display:block;height:100%;border-radius:3px}
+.arrow{display:grid;place-items:center;color:var(--accent);font-size:1.6rem;writing-mode:horizontal-tb}
+.arrow div{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 .7rem var(--f-mono);color:var(--ink-3);text-align:center;max-width:110px}
+.arrow svg{width:56px;height:56px}
+.funnel{display:flex;flex-direction:column;gap:6px}
+.fstep{display:grid;grid-template-columns:minmax(0,1fr);position:relative}
+.fstep .fb{height:44px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;color:#fff;font-size:.82rem;min-width:fit-content;max-width:100%}
+.fstep .fb b{font:700 1.08rem var(--f-display)}
+.fstep .fb span{opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fstep .fr{font:500 .7rem var(--f-mono);color:var(--ink-3);padding:2px 4px 0}
+.ratio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ratio div{border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+.ratio b{font:700 1.2rem var(--f-display);display:block}
+.ratio span{font-size:.74rem;color:var(--ink-3)}
+
+/* rings */
+.rings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ring{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.ring svg{width:100%;max-width:120px;height:auto}
+.ring b{font-size:.84rem}
+.ring span{font-size:.74rem;color:var(--ink-3)}
+/* pictogram */
+.picto{display:grid;grid-template-columns:repeat(20,1fr);gap:4px;max-width:420px}
+.picto i{aspect-ratio:1;border-radius:50%;display:block}
+
+/* coverage + timeline */
+.cover{display:grid;grid-template-columns:140px repeat(10,minmax(0,1fr));gap:4px;font-size:.76rem;min-width:700px}
+.cover .h{font-weight:600;color:var(--ink-3);text-align:center;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.cover .r{color:var(--ink-2);font-weight:500;align-self:center}
+.cover .c{height:26px;border-radius:6px;background:var(--surface-2);display:grid;place-items:center;font:500 .66rem var(--f-mono);color:var(--ink-3)}
+.cover .c.on{background:var(--s3);color:#fff}
+.cover .c.part{background:repeating-linear-gradient(135deg,var(--s3) 0 5px,color-mix(in srgb,var(--s3) 45%,var(--surface)) 5px 10px);color:#fff}
+.timeline{display:grid;position:relative;padding-left:22px}
+.timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--accent),var(--s3))}
+.tl{position:relative;padding:5px 0 9px}
+.tl::before{content:"";position:absolute;left:-21px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.tl b{font-family:var(--f-mono);font-size:.74rem;color:var(--accent-ink);display:block}
+.tl span{font-size:.86rem;color:var(--ink-2)}
+
+/* actions taken */
+.done{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.dcard{border-radius:14px;padding:14px 16px;background:linear-gradient(160deg,color-mix(in srgb,var(--s3) 12%,var(--surface)),var(--surface) 70%);border:1px solid color-mix(in srgb,var(--s3) 30%,var(--line));display:flex;flex-direction:column;gap:6px}
+.dcard .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dcard b.big2{font:700 1.4rem var(--f-display);color:var(--s3)}
+.dcard h4{margin:0;font-size:.92rem}
+.dcard p{font-size:.8rem;color:var(--ink-2)}
+.plan{display:grid;gap:8px}
+.pl{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 12px;border-radius:12px;background:var(--surface-2)}
+.pl .when{font:600 .72rem var(--f-mono);color:var(--accent-ink);padding-top:2px}
+.pl h4{margin:0 0 2px;font-size:.9rem}
+.pl p{font-size:.8rem;color:var(--ink-2)}
+
+.actions{counter-reset:a;display:grid;gap:10px}
+.action{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow)}
+.action::before{counter-increment:a;content:counter(a);font:600 .9rem var(--f-mono);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:var(--saffron)}
+.action p{color:var(--ink-2);font-size:.84rem}
+footer{margin-top:48px;font-size:.78rem;color:var(--ink-3);display:grid;gap:6px}
+.secnav button{flex:none;font:600 .8rem var(--f-body);color:var(--ink-2);padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.secnav button[aria-selected="true"]{background:var(--navy);color:var(--hero-ink);border-color:var(--navy);box-shadow:0 3px 10px -4px rgba(11,24,48,.6)}
+body:not(.show-all) [data-tab]:not(.on){display:none!important}
+body:not(.tab-overview) #months{visibility:hidden}
+.tabtitle{margin-top:26px}
+.qgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.qc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;min-width:0}
+.qc .qn{font-size:.72rem;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.qc .qrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;align-items:center;font-size:.76rem;color:var(--ink-3)}
+.qc .qbar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.qc .qbar i{display:block;height:100%;border-radius:4px}
+.qc .qv{font:600 .8rem var(--f-mono);color:var(--ink)}
+.qc .qd{font:700 1.25rem var(--f-display)}
+.qc .qd.good{color:var(--good)} .qc .qd.bad{color:var(--bad)}
+.signals{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sg{display:grid;grid-template-columns:22px minmax(0,1fr);gap:2px 10px;padding:8px 10px;border-radius:10px;background:var(--surface-2)}
+.sg::before{grid-row:1/3;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:#fff}
+.sg.up::before{content:"▲";background:var(--good)} .sg.down::before{content:"▼";background:var(--bad)}
+.sg b{font-size:.88rem} .sg span{font-size:.8rem;color:var(--ink-2)}
+.opps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.op{border-radius:12px;padding:12px;background:linear-gradient(150deg,var(--accent-soft),var(--surface) 80%);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));display:flex;flex-direction:column;gap:4px}
+.op b{font:700 1.4rem var(--f-display);color:var(--accent-ink)}
+.op span{font-size:.8rem;color:var(--ink-2)}
+table.heat td.n{position:relative}
+table.heat td.h{background:color-mix(in srgb,var(--hc) calc(var(--a)*100%),transparent)}
+@media (max-width:1000px){.qgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.opps{grid-template-columns:minmax(0,1fr)}.qc .qd{font-size:1.05rem}}
+
+.card,.kpi,.action,.statrow,.band-head,.dcard,.pl,.inv{break-inside:avoid}
+.band-head{break-after:avoid}
+
+@media (max-width:980px){.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.g3 > :last-child:nth-child(odd){grid-column:1/-1}}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.intro-top,.g2,.g21,.flow{grid-template-columns:minmax(0,1fr)}.sources{justify-content:flex-start}.arrow svg{transform:rotate(90deg)}.herostats{grid-template-columns:repeat(2,minmax(0,1fr))}.rings{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){
+  .wrap{padding-inline:16px}.top-in{padding:8px 16px}.secnav{padding:0 16px 8px}
+  .brand span{display:none}
+  .intro{padding:22px 18px 18px;border-radius:18px}
+  .g3{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{padding:12px}.kpi .v{font-size:1.3rem}.kpi .sub{display:none}.spark{width:54px;height:24px}.kpi .delta{font-size:.66rem}
+  .card{padding:14px 14px;border-radius:14px}
+  .chart{height:230px}.chart.tall{height:280px}.chart.short{height:190px}
+  .ratio{grid-template-columns:minmax(0,1fr)}
+  .statrow{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .chip{font-size:.68rem;padding:3px 8px}
+  .herostats div{padding:12px}
+  .action{grid-template-columns:auto minmax(0,1fr)}.action .pill{grid-column:2;justify-self:start}
+  .pl{grid-template-columns:minmax(0,1fr) auto}.pl .when{grid-column:1/-1}
+  section.band{margin-top:40px}
+  .picto{gap:3px}
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><div class="coin" aria-hidden="true"></div><div><b>Gold Coins Club &amp; Resort</b><span>Marketing &amp; sales performance · 2026</span></div></div>
+    <div class="months" role="group" aria-label="Choose period" id="months"></div>
+  </div>
+  <nav class="secnav" aria-label="Dashboard tabs" id="tabs">
+    <button type="button" data-t="overview">Overview</button><button type="button" data-t="roi">Investment &amp; ROI</button><button type="button" data-t="sales">Sales</button><button type="button" data-t="meta">Meta Ads</button><button type="button" data-t="google">Google Ads</button><button type="button" data-t="web">Website &amp; Search</button><button type="button" data-t="maps">Google Maps</button><button type="button" data-t="actions">Next steps</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="intro" data-tab="overview">
+    <div class="intro-top">
+      <div>
+        <div class="eyebrow">Marketing &amp; sales report · data to 1 Oct 2026</div>
+        <h1 id="headline">2026 so far</h1>
+        <p class="lede" id="lede"></p>
+      </div>
+      <div class="sources" aria-label="Data sources">
+        <span class="chip"><span class="dot ok"></span>Sales CRM · Jan–Oct</span>
+        <span class="chip"><span class="dot ok"></span>Business Profile · Apr–Sep</span>
+        <span class="chip"><span class="dot ok"></span>GA4 · from 24 May</span>
+        <span class="chip"><span class="dot ok"></span>Google Ads · 13 Jul–1 Oct</span>
+        <span class="chip"><span class="dot ok"></span>Search Console · from 7 Sep</span>
+        <span class="chip"><span class="dot ok"></span>Meta Ads · Jan–Oct</span>
+      </div>
+    </div>
+    <div class="herostats">
+      <div><span>Marketing spend</span><b class="num">₹7.78L</b><span>Meta ₹6.99L + Google ₹79k</span></div>
+      <div><span>Enquiries</span><b class="num">5,621</b><span>in the Sales CRM</span></div>
+      <div><span>Bookings won</span><b class="num">788</b><span><em>14%</em> of enquiries</span></div>
+      <div><span>Booking value</span><b class="num">₹2.69Cr</b><span><em>₹14.3Cr</em> still open</span></div>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis" aria-live="polite" data-tab="overview"></div>
+
+  <!-- ============ GROWTH ============ -->
+  <section class="band" id="growth" data-tab="overview">
+    <div class="band-head">
+      <div><div class="eyebrow">Growth · quarter on quarter</div><h2>Q3 spent 3.2× more than Q2 and booked 13% less</h2></div>
+      <p>Q2 = Apr–Jun, Q3 = Jul–Sep. Spend is Meta + Google ads excluding GST. Ratios are blended because enquiries are not yet tagged by channel.</p>
+    </div>
+    <div class="qgrid" id="qgrid"></div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Growth signals</h3>
+        <ul class="signals">
+          <li class="sg up"><b>Booking value +73%</b><span>₹79L in Q2 → ₹1.37Cr in Q3. Bigger-ticket weddings and day outings.</span></li>
+          <li class="sg up"><b>Enquiries +46%</b><span>1,512 → 2,214. Demand is growing.</span></li>
+          <li class="sg up"><b>Google Maps directions +50%</b><span>4,913 in April → 7,369 in September.</span></li>
+          <li class="sg down"><b>Bookings −13%</b><span>368 → 321 while enquiries grew: follow-up is the bottleneck.</span></li>
+          <li class="sg down"><b>Conversion 24% → 14%</b><span>The sales team is handling more leads with the same people.</span></li>
+          <li class="sg down"><b>Profile calls −65%</b><span>1,612 in May → 564 in September. Test the phone line.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Where the next ₹ of growth is</h3>
+        <div class="opps">
+          <div class="op"><b class="num">₹14.3Cr</b><span>Open pipeline (new + ongoing). Closing 5% of it is ₹71L, more than any month so far.</span></div>
+          <div class="op"><b class="num">+217</b><span>Extra Q3 bookings if conversion had stayed at Q2's 24%. At ₹42.7k each that is about ₹93L.</span></div>
+          <div class="op"><b class="num">₹202</b><span>Cost per Meta birthday lead, vs ₹804 for corporate and ₹871 for weddings. Shift budget toward what converts cheapest.</span></div>
+          <div class="op"><b class="num">0 tagged</b><span>Bookings linked to an ad. Adding a source field turns every number here from blended into exact.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INVESTMENT → SALES ============ -->
+  <section class="band" id="invest" data-tab="roi">
+    <div class="band-head">
+      <div><div class="eyebrow">Money in, sales out</div><h2>What marketing cost, and what sales brought in</h2></div>
+      <p>Spend is what was recorded. Sales cannot yet be split by channel because the CRM logs 82% of enquiries only as "IVR", so the ratios below are blended across all channels.</p>
+    </div>
+    <div class="card">
+      <div class="flow">
+        <div class="flowcol">
+          <h3><i style="background:var(--s2)">₹</i>Marketing investment</h3>
+          <div class="inv"><span>Meta (Facebook &amp; Instagram)</span><b class="num">₹6.99L</b><div class="bar"><i style="width:100%;background:var(--s7)"></i></div><small>146 campaigns · 7.16M impressions · 1,194 unique leads (₹414 each, Jun–Sep sheet)</small></div>
+          <div class="inv"><span>Google Ads (13 Jul – 27 Sep)</span><b class="num">₹79.3k</b><div class="bar"><i style="width:11.3%;background:var(--s2)"></i></div><small>42,302 clicks · 3 tracked leads · ₹93.5k paid incl. GST</small></div>
+          <div class="inv"><span>Google Business Profile</span><b class="num">₹0</b><div class="bar"><i style="width:1%;background:var(--s3)"></i></div><small>Free · 479k views · 40,962 direction requests · 6,426 calls</small></div>
+          <div class="inv"><span>Organic search &amp; website</span><b class="num">₹0 ads</b><div class="bar"><i style="width:1%;background:var(--s1)"></i></div><small>11,023 sessions · 31 of 42 web form leads</small></div>
+        </div>
+        <div class="arrow" aria-hidden="true"><div><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/><path d="M18 28h20M31 21l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Jan–Oct 2026</div></div>
+        <div class="flowcol">
+          <h3><i style="background:var(--s3)">✓</i>Sales results</h3>
+          <div class="funnel" id="funnel"></div>
+        </div>
+      </div>
+      <div class="ratio">
+        <div><b class="num">34.5×</b><span>Booking value per ₹1 of ads, Jan–Sep (₹2.69Cr ÷ ₹7.78L, blended)</span></div>
+        <div><b class="num">₹988</b><span>Ad spend per booking (₹7.78L ÷ 788)</span></div>
+        <div><b class="num">₹138</b><span>Ad spend per enquiry (₹7.78L ÷ 5,621)</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="cardhead"><h3>Investment and sales, month by month</h3>
+      <div class="legend"><span><i style="background:var(--s7)"></i>Meta spend</span><span><i style="background:var(--s2)"></i>Google Ads spend</span><span><i style="background:var(--s3)"></i>Booking value won</span></div></div>
+      <div class="chart short"><canvas id="cInvSpend" role="img" aria-label="Google Ads spend by month"></canvas></div>
+      <div class="chart short"><canvas id="cInvWon" role="img" aria-label="Booking value won by month"></canvas></div>
+      <p class="insight">Spend and bookings don't move together. <b>July: ₹2.1L of ads, ₹61L booked. September: ₹2.3L of ads, ₹39L booked.</b> Meta spend is placed in the month each campaign ended, so long campaigns land in one month.</p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Monthly unit economics</h3>
+      <div class="tbl"><table class="heat" id="econ"></table></div>
+      <p class="cap">Darker cells are better for that row (higher value, lower cost; for ad spend, darker means more spend). Jan–Feb have no booking status in the CRM. Monthly cost ratios swing because Meta spend is booked in each campaign's end month; use the quarterly view on Overview for trends.</p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Health check</h3>
+      <div class="rings" id="rings"></div>
+    </div>
+  </section>
+
+
+  <!-- ============ SALES CRM ============ -->
+  <section class="band" id="sales" data-tab="sales">
+    <div class="band-head">
+      <div><div class="eyebrow">Sales CRM · Jan–Oct 2026</div><h2>Enquiries, bookings and revenue</h2></div>
+      <p>From the Gold Coins Sales CRM, read on 1 Oct 2026. Value is the quote, or the approximate revenue when no quote was given.</p>
+    </div>
+    <div class="statrow card" style="flex-direction:row">
+      <div class="big"><span class="eyebrow">Enquiries</span><span class="v num">5,621</span><span class="cap">Jan – 1 Oct</span></div>
+      <div class="big"><span class="eyebrow">Bookings won</span><span class="v num">788</span><span class="cap">14% of enquiries</span></div>
+      <div class="big"><span class="eyebrow">Won value</span><span class="v num">₹2.69Cr</span><span class="cap">₹34.1k per booking</span></div>
+      <div class="big"><span class="eyebrow">Open pipeline</span><span class="v num">₹14.29Cr</span><span class="cap">2,609 new + ongoing</span></div>
+      <div class="big"><span class="eyebrow">Lost</span><span class="v num">1,657</span><span class="cap">₹1.27Cr value</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end"><h3>Enquiries and bookings per month</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>Enquiries</span><span><i style="background:var(--s3)"></i>Bookings won</span></div></div>
+        <div class="chart"><canvas id="cCrmMonthly" role="img" aria-label="Enquiries and bookings per month"></canvas></div>
+        <p class="insight"><b>July was the peak: 812 enquiries, 121 bookings.</b> No bookings are marked in January and February, so status tracking likely started in March.</p>
+      </div>
+      <div class="card">
+        <h3>Won value per month</h3>
+        <div class="chart"><canvas id="cCrmValue" role="img" aria-label="Won value per month"></canvas></div>
+        <p class="insight">Bookings worth <b>₹61L in July</b>, the best month. September held ₹39L despite 218 lost enquiries.</p>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="card">
+        <h3>Conversion rate</h3>
+        <div class="chart short"><canvas id="cCrmConv" role="img" aria-label="Conversion rate per month"></canvas></div>
+        <p class="cap">Fell from 32% in May to 14% by September as enquiry volume rose.</p>
+      </div>
+      <div class="card">
+        <h3>What people ask for</h3>
+        <div class="chart short"><canvas id="cCrmType" role="img" aria-label="Enquiries by type"></canvas></div>
+        <p class="cap">Room stays and day outings are 64% of enquiries. 884 have no type recorded.</p>
+      </div>
+      <div class="card">
+        <h3>Where enquiries come from (each dot = 1%)</h3>
+        <div class="picto" id="picto" role="img" aria-label="82% IVR phone, 8% CRM, 5% promotion, 5% other"></div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>IVR phone 82%</span><span><i style="background:var(--s7)"></i>CRM 8%</span><span><i style="background:var(--s4)"></i>Promotion 5%</span><span><i style="background:var(--muted-series)"></i>Other 5%</span></div>
+        <p class="cap"><b>82% arrive on the IVR phone line.</b> Only 3 are tagged Meta and none Google, so bookings cannot be traced to ads yet.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Sales team performance</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Executive</th><th class="n">Handling</th><th class="n">Open</th><th class="n">Won</th><th class="n">Lost</th><th class="n">Conversion</th><th class="n">Won value</th><th class="n">Open value</th></tr></thead>
+        <tbody>
+          <tr><td>Chetan</td><td class="n">1,567</td><td class="n">689</td><td class="n">447</td><td class="n">318</td><td class="n"><span class="pill good">29%</span></td><td class="n">₹1.22Cr</td><td class="n">₹8.13Cr</td></tr>
+          <tr><td>Ajay</td><td class="n">1,362</td><td class="n">465</td><td class="n">116</td><td class="n">702</td><td class="n"><span class="pill warn">9%</span></td><td class="n">₹33.9L</td><td class="n">₹14.3L</td></tr>
+          <tr><td>Akhil</td><td class="n">962</td><td class="n">487</td><td class="n">106</td><td class="n">156</td><td class="n"><span class="pill warn">11%</span></td><td class="n">₹35.7L</td><td class="n">₹2.72Cr</td></tr>
+          <tr><td>Shashank</td><td class="n">450</td><td class="n">194</td><td class="n">0</td><td class="n">240</td><td class="n"><span class="pill bad">0%</span></td><td class="n">₹0</td><td class="n">₹4.5L</td></tr>
+          <tr><td>Hemanth</td><td class="n">421</td><td class="n">185</td><td class="n">40</td><td class="n">138</td><td class="n"><span class="pill warn">10%</span></td><td class="n">₹17.0L</td><td class="n">₹1.87Cr</td></tr>
+          <tr><td>GM</td><td class="n">267</td><td class="n">187</td><td class="n">52</td><td class="n">17</td><td class="n"><span class="pill good">19%</span></td><td class="n">₹34.0L</td><td class="n">₹61.3L</td></tr>
+          <tr><td>Abhinav</td><td class="n">205</td><td class="n">111</td><td class="n">5</td><td class="n">29</td><td class="n"><span class="pill bad">2%</span></td><td class="n">₹1.5L</td><td class="n">₹55.8L</td></tr>
+          <tr><td>Kasturi</td><td class="n">200</td><td class="n">158</td><td class="n">18</td><td class="n">24</td><td class="n"><span class="pill warn">9%</span></td><td class="n">₹24.3L</td><td class="n">₹0</td></tr>
+          <tr><td>Kiran</td><td class="n">69</td><td class="n">46</td><td class="n">4</td><td class="n">4</td><td class="n"><span class="pill bad">6%</span></td><td class="n">₹0.7L</td><td class="n">₹18.7L</td></tr>
+        </tbody></table></div>
+      <p class="cap">Chetan books 57% of all bookings won. Akhil and Hemanth hold ₹4.6Cr of open pipeline between them: the biggest follow-up opportunity.</p>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end"><h3>Meta (Facebook/Instagram) leads per month</h3>
+        <div class="legend"><span><i style="background:var(--s7)"></i>Unique leads</span></div></div>
+        <div class="chart short"><canvas id="cMetaM" role="img" aria-label="Meta leads per month"></canvas></div>
+        <p class="insight"><b>957 dated Meta leads Jun–Sep</b> (1,194 unique in total; 237 have no date). August peaked at 340. Only 13 are marked won, because outcomes are not updated in the Meta sheet.</p>
+      </div>
+      <div class="card">
+        <h3>Meta leads by enquiry type</h3>
+        <div class="chart short"><canvas id="cMetaQ" role="img" aria-label="Meta leads by type"></canvas></div>
+        <p class="cap">Birthdays and corporate events lead. Meta spend was not provided, so cost per lead is not shown.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Data issues to fix in the CRM</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Issue</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>13 February birthday enquiries carry ₹6.2Cr in value</td><td>Inflates open pipeline and birthday value; likely a typing error</td></tr>
+          <tr><td>June enquiries have no type (565 of 575)</td><td>June can't be split by product</td></tr>
+          <tr><td>Meta sheet has a duplicated column block dated 2027, and dates dragged to 2028–2038</td><td>2,433 rows shrink to 1,194 unique leads</td></tr>
+          <tr><td>Lead source mostly "IVR"; Google Ads and Business Profile are never recorded</td><td>Bookings can't be linked to ad spend</td></tr>
+        </tbody></table></div>
+      <p class="cap">Fix: add a "How did you hear about us?" field (Google search, Google Maps, Instagram/Facebook, Ads, Friend, Repeat) to every call and form.</p>
+    </div>
+  </section>
+
+  <!-- ============ ALL TIME ============ -->
+  <section class="band" id="alltime" data-tab="overview">
+    <div class="band-head">
+      <div><div class="eyebrow">All time · Jan–Oct 2026</div><h2>What was tracked, and when</h2></div>
+      <p>Each source starts on a different date. Months without tracking are left empty rather than estimated.</p>
+    </div>
+    <div class="grid g21">
+      <div class="card">
+        <h3>Data coverage by month</h3>
+        <div class="tbl"><div class="cover" role="table" aria-label="Data coverage by month">
+          <span></span><span class="h">Jan</span><span class="h">Feb</span><span class="h">Mar</span><span class="h">Apr</span><span class="h">May</span><span class="h">Jun</span><span class="h">Jul</span><span class="h">Aug</span><span class="h">Sep</span><span class="h">Oct</span>
+          <span class="r">GA4 website</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c part">24 May</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c part">1 day</span>
+          <span class="r">Google Ads</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">₹0</span><span class="c">₹0</span><span class="c part">13 Jul</span><span class="c part">to 16 Aug</span><span class="c part">7–27</span><span class="c">₹0</span>
+          <span class="r">Search Console</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c part">7 Sep</span><span class="c">—</span>
+          <span class="r">Business Profile</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c">—</span>
+          <span class="r">Meta Ads spend</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c part">1 day</span>
+          <span class="r">Meta lead sheet</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c">—</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c">—</span>
+          <span class="r">Sales CRM</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c on">✓</span><span class="c part">1 day</span>
+        </div></div>
+        <div class="legend"><span><i style="background:var(--s3)"></i>Full month</span><span><i style="background:repeating-linear-gradient(135deg,var(--s3) 0 3px,var(--surface-2) 3px 6px)"></i>Part month</span><span><i style="background:var(--surface-2)"></i>Not tracked</span></div>
+        <p class="cap">The old website had no GA4 before 24 May, so January–April web traffic cannot be recovered. The Business Profile keeps 18 months of history: export Jan–Mar from it to extend the Maps charts.</p>
+      </div>
+      <div class="card">
+        <h3>Timeline</h3>
+        <div class="timeline">
+          <div class="tl"><b>Jan</b><span>Sales CRM records start: 1,033 enquiries in January.</span></div>
+          <div class="tl"><b>Apr</b><span>Business Profile data starts: 4,913 direction requests.</span></div>
+          <div class="tl"><b>8 May</b><span>Google Ads account created.</span></div>
+          <div class="tl"><b>24 May</b><span>GA4 tracking starts on the website.</span></div>
+          <div class="tl"><b>13 Jul</b><span>First ads: Day-Out Search and Performance Max.</span></div>
+          <div class="tl"><b>17 Aug</b><span>All ads stop for three weeks.</span></div>
+          <div class="tl"><b>7 Sep</b><span>New website goes live; ads restart with a YouTube burst.</span></div>
+          <div class="tl"><b>Sep</b><span>Business Profile audit: 45 changes made.</span></div>
+          <div class="tl"><b>28 Sep</b><span>Ad funds run out. Nothing serving.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ============ WEBSITE ============ -->
+  <section class="band" id="web" data-tab="web">
+    <div class="band-head">
+      <div><div class="eyebrow">GA4 · Website</div><h2>Traffic and engagement by month</h2></div>
+      <p>Monthly figures are estimated by splitting GA4's weekly totals across calendar days. May starts on 24 May (tracking start) and October has one day, so compare June to September.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Users per month</h3>
+        <div class="chart"><canvas id="cUsers" role="img" aria-label="Users per month bar chart"></canvas></div>
+        <p class="insight"><b>September is 54% of all users this year</b>, but most of it came from the YouTube-heavy Performance Max burst (7–27 Sep).</p>
+      </div>
+      <div class="card">
+        <h3>Average engagement time per user (seconds)</h3>
+        <div class="chart"><canvas id="cEng" role="img" aria-label="Engagement time per month line chart"></canvas></div>
+        <p class="insight">Engagement fell from <b>91 s in June to 23 s in September</b>. More visitors, but far fewer who read the page.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end">
+        <h3>New users per week, with ad activity</h3>
+        <div class="legend"><span><i style="background:var(--s2)"></i>Google Ads running</span><span><i style="background:var(--s1)"></i>No ads</span></div>
+      </div>
+      <div class="chart tall"><canvas id="cWeekly" role="img" aria-label="Weekly new users bar chart"></canvas></div>
+      <p class="insight">Every spike lines up with ad spend; the dark week of 30 Aug fell to <b>92 new users</b>. Organic demand without ads sits around <b>500–1,000 a week</b>.</p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Month-over-month table</h3>
+      <div class="tbl"><table id="momTable"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ CHANNELS & LEADS ============ -->
+  <section class="band" id="channels" data-tab="web">
+    <div class="band-head">
+      <div><div class="eyebrow">GA4 · Acquisition</div><h2>Where visitors come from, and where enquiries come from</h2></div>
+      <p>Late May to 1 Oct. Leads are enquiry-form leads by first-touch channel (42 in total).</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Sessions by channel</h3>
+        <div class="chart tall"><canvas id="cSessions" role="img" aria-label="Sessions by channel"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Enquiry-form leads by channel</h3>
+        <div class="chart tall"><canvas id="cLeads" role="img" aria-label="Leads by channel"></canvas></div>
+      </div>
+    </div>
+    <div class="grid g21" style="margin-top:14px">
+      <div class="card">
+        <h3>Website enquiry funnel (users)</h3>
+        <div class="chart"><canvas id="cFunnel" role="img" aria-label="Enquiry funnel"></canvas></div>
+        <p class="insight"><b>1,086 people priced a day out</b> with the estimate calculator, but only 43 became tracked leads. None of these events is marked as a key event in GA4 yet.</p>
+      </div>
+      <div class="card">
+        <h3>Channel quality</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Channel</th><th class="n">Engaged</th><th class="n">Avg time</th><th class="n">Leads</th></tr></thead>
+          <tbody>
+            <tr><td>Organic Search</td><td class="n">72%</td><td class="n">80 s</td><td class="n"><span class="pill good">31</span></td></tr>
+            <tr><td>Organic Social</td><td class="n">69%</td><td class="n">71 s</td><td class="n">0</td></tr>
+            <tr><td>AI Assistant</td><td class="n">68%</td><td class="n">63 s</td><td class="n">2</td></tr>
+            <tr><td>Referral</td><td class="n">61%</td><td class="n">59 s</td><td class="n">3</td></tr>
+            <tr><td>Paid Search</td><td class="n">38%</td><td class="n">27 s</td><td class="n"><span class="pill bad">0</span></td></tr>
+            <tr><td>Direct</td><td class="n">34%</td><td class="n">28 s</td><td class="n">4</td></tr>
+            <tr><td>Cross-network (PMax)</td><td class="n">34%</td><td class="n">9.7 s</td><td class="n"><span class="pill bad">2</span></td></tr>
+          </tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GOOGLE ADS ============ -->
+  <section class="band" id="ads" data-tab="google">
+    <div class="band-head">
+      <div><div class="eyebrow">Google Ads</div><h2>Spend and what it bought</h2></div>
+      <p>₹79,321 spent 13 Jul – 27 Sep (excl. GST). Funds ran out on 28 Sep; nothing is serving today.</p>
+    </div>
+    <div class="statrow card" style="flex-direction:row">
+      <div class="big"><span class="eyebrow">Total spend</span><span class="v num">₹79.3k</span><span class="cap">3 dark weeks in Aug</span></div>
+      <div class="big"><span class="eyebrow">Clicks</span><span class="v num">42.3k</span><span class="cap">85% were YouTube via PMax</span></div>
+      <div class="big"><span class="eyebrow">Tracked leads</span><span class="v num">3</span><span class="cap">all on Wedding-Leads</span></div>
+      <div class="big"><span class="eyebrow">Cost per lead</span><span class="v num">₹26.4k</span><span class="cap">benchmark ₹500–1,500</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Spend per month</h3>
+        <div class="chart short"><canvas id="cSpendM" role="img" aria-label="Ad spend per month"></canvas></div>
+        <div class="tabs" role="group" aria-label="Spend view"><button class="tabbtn" aria-pressed="true" data-v="m">Monthly</button><button class="tabbtn" aria-pressed="false" data-v="w">Weekly</button></div>
+      </div>
+      <div class="card">
+        <h3>Where the ad money landed</h3>
+        <div class="chart short"><canvas id="cLanded" role="img" aria-label="Ad cost by destination"></canvas></div>
+        <p class="insight"><b>53% went to Google's own profile page</b>, and ₹13,341 to the old WordPress site.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Campaign scorecard</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Campaign</th><th>Status</th><th class="n">Impr.</th><th class="n">Clicks</th><th class="n">CTR</th><th class="n">CPC</th><th class="n">Spend</th><th class="n">Leads</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>Google-Map-Ad (PMax)</td><td><span class="pill neutral">Ended</span></td><td class="n">616,390</td><td class="n">40,621</td><td class="n">6.59%</td><td class="n">₹1.04</td><td class="n">₹42,147</td><td class="n">0*</td><td><span class="pill bad">Do not relaunch as is</span></td></tr>
+          <tr><td>Day-Out Search</td><td><span class="pill neutral">Paused</span></td><td class="n">21,799</td><td class="n">1,235</td><td class="n">5.67%</td><td class="n">₹14.65</td><td class="n">₹18,096</td><td class="n">0</td><td><span class="pill warn">Rebuild, land on /day-outing/</span></td></tr>
+          <tr><td>Wedding-Leads Search</td><td><span class="pill good">Enabled</span></td><td class="n">4,351</td><td class="n">384</td><td class="n">8.83%</td><td class="n">₹43.09</td><td class="n">₹16,546</td><td class="n">3</td><td><span class="pill good">Scale after tracking fix</span></td></tr>
+          <tr><td>Wedding-Venue (Netlify)</td><td><span class="pill neutral">Paused</span></td><td class="n">997</td><td class="n">59</td><td class="n">5.92%</td><td class="n">₹42.64</td><td class="n">₹2,516</td><td class="n">0</td><td><span class="pill bad">Retire test page</span></td></tr>
+        </tbody></table></div>
+      <p class="cap">96–97% of all ad clicks came from mobile phones (Device report, Jul–Sep). * PMax reported 6,461 "conversions", which are Contact taps (2,178) and Get-directions taps (4,283), not enquiries.</p>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Search spend: your keywords vs Google's AI Max</h3>
+        <div class="chart short"><canvas id="cAimax" role="img" aria-label="Search spend by match source"></canvas></div>
+        <p class="insight"><b>Half of Search spend (₹18.5k) went to AI Max</b>, which picks searches and pages for you. Your chosen keywords spent ₹18.7k for 1 lead.</p>
+      </div>
+      <div class="card">
+        <h3>Spend by network</h3>
+        <div class="chart short"><canvas id="cNetwork" role="img" aria-label="Spend by network"></canvas></div>
+        <p class="insight">Search partners took ₹1,013 for 117 clicks and no leads. Switch them off on relaunch.</p>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="card">
+        <h3>Ad impressions by hour</h3>
+        <div class="chart short"><canvas id="cHour" role="img" aria-label="Impressions by hour of day"></canvas></div>
+        <p class="cap">Peaks 10 AM–2 PM and 7–9 PM. 12–6 AM (grey) still took 44k impressions with no bid-down.</p>
+      </div>
+      <div class="card">
+        <h3>Ad impressions by day</h3>
+        <div class="chart short"><canvas id="cDay" role="img" aria-label="Impressions by day of week"></canvas></div>
+        <p class="cap">Wednesday, Saturday and Sunday lead. Monday is the quietest day.</p>
+      </div>
+      <div class="card">
+        <h3>Who saw the ads (age)</h3>
+        <div class="chart short"><canvas id="cAge" role="img" aria-label="Impressions by age"></canvas></div>
+        <p class="cap">Only 3.2% of impressions have a known age. 25–34 leads; 64% male.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Keyword performance</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Keyword</th><th>Campaign</th><th class="n">Impr.</th><th class="n">Clicks</th><th class="n">CTR</th><th class="n">CPC</th><th class="n">Spend</th><th class="n">Leads</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>"resort"</td><td>Day-Out</td><td class="n">4,840</td><td class="n">299</td><td class="n">6.18%</td><td class="n">₹24.80</td><td class="n">₹7,416</td><td class="n">0</td><td><span class="pill bad">Too broad, drop</span></td></tr>
+          <tr><td>"day outing resort near me"</td><td>Day-Out</td><td class="n">2,073</td><td class="n">103</td><td class="n">4.97%</td><td class="n">₹34.13</td><td class="n">₹3,516</td><td class="n">0</td><td><span class="pill warn">Keep, add geography</span></td></tr>
+          <tr><td>"resort venue for wedding"</td><td>Wedding-Leads</td><td class="n">935</td><td class="n">88</td><td class="n">9.41%</td><td class="n">₹36.51</td><td class="n">₹3,213</td><td class="n"><span class="pill good">1</span></td><td><span class="pill good">Keep</span></td></tr>
+          <tr><td>[resorts near me]</td><td>Day-Out</td><td class="n">2,577</td><td class="n">274</td><td class="n">10.63%</td><td class="n">₹6.90</td><td class="n">₹1,891</td><td class="n">0</td><td><span class="pill warn">Low quality score</span></td></tr>
+          <tr><td>"bangalore best wedding venues"</td><td>Wedding-Leads</td><td class="n">453</td><td class="n">38</td><td class="n">8.39%</td><td class="n">₹49.02</td><td class="n">₹1,863</td><td class="n"><span class="pill good">1</span></td><td><span class="pill good">Keep</span></td></tr>
+          <tr><td>"resort in bangalore for wedding"</td><td>Wedding-Leads</td><td class="n">292</td><td class="n">34</td><td class="n">11.64%</td><td class="n">₹52.07</td><td class="n">₹1,770</td><td class="n">0</td><td><span class="pill warn">Low quality score</span></td></tr>
+          <tr><td>[day outing]</td><td>Day-Out</td><td class="n">1,076</td><td class="n">61</td><td class="n">5.67%</td><td class="n">₹19.50</td><td class="n">₹1,190</td><td class="n">0</td><td><span class="pill neutral">Test again</span></td></tr>
+          <tr><td>"open space wedding venues in bangalore"</td><td>Wedding-Leads</td><td class="n">266</td><td class="n">22</td><td class="n">8.27%</td><td class="n">₹45.69</td><td class="n">₹1,005</td><td class="n">0</td><td><span class="pill neutral">Watch</span></td></tr>
+          <tr><td>"resort wedding venues near me"</td><td>Wedding-Leads</td><td class="n">87</td><td class="n">10</td><td class="n">11.49%</td><td class="n">₹22.08</td><td class="n">₹221</td><td class="n"><span class="pill good">1</span></td><td><span class="pill good">Raise bid</span></td></tr>
+          <tr><td>[gold coins resort]</td><td>Day-Out</td><td class="n">176</td><td class="n">20</td><td class="n">11.36%</td><td class="n">₹10.15</td><td class="n">₹203</td><td class="n">0</td><td><span class="pill good">Move to Brand campaign</span></td></tr>
+        </tbody></table></div>
+      <p class="cap">Search, all time. 117 competitor and far-location negatives exist on Day-Out only; the wedding campaigns have none.</p>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Sitelink click-through rate</h3>
+        <div class="chart tall"><canvas id="cSitelinks" role="img" aria-label="Sitelink CTR"></canvas></div>
+        <p class="insight">On the wedding campaign the best sitelinks are <b>Day Out, Birthday and Family</b>, not weddings. Fix the typos "Weeding" and "Birthday Part Venue".</p>
+        <div class="legend"><span><i style="background:var(--s4)"></i>Typo or disapproved</span><span><i style="background:var(--s1)"></i>Clean</span></div>
+      </div>
+      <div class="card">
+        <h3>Search terms that wasted money</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Search term</th><th class="n">Impr.</th><th class="n">Clicks</th><th class="n">Cost</th></tr></thead>
+          <tbody>
+            <tr><td>wedding venues in bangalore</td><td class="n">97</td><td class="n">12</td><td class="n">₹1,180</td></tr>
+            <tr><td>resort near me</td><td class="n">524</td><td class="n">64</td><td class="n">₹546</td></tr>
+            <tr><td>resorts near me</td><td class="n">826</td><td class="n">97</td><td class="n">₹380</td></tr>
+            <tr><td>area83 prices <span class="pill neutral">competitor</span></td><td class="n">32</td><td class="n">4</td><td class="n">₹105</td></tr>
+            <tr><td>rr retreat nelamangala <span class="pill neutral">competitor</span></td><td class="n">46</td><td class="n">5</td><td class="n">₹101</td></tr>
+            <tr><td>mango mist prices <span class="pill neutral">competitor</span></td><td class="n">158</td><td class="n">6</td><td class="n">₹82</td></tr>
+            <tr><td>tourist places near me <span class="pill warn">tourist</span></td><td class="n">502</td><td class="n">21</td><td class="n">₹45</td></tr>
+            <tr><td>places to visit near me <span class="pill warn">tourist</span></td><td class="n">555</td><td class="n">17</td><td class="n">₹30</td></tr>
+            <tr><td>attractions near me <span class="pill warn">tourist</span></td><td class="n">1,052</td><td class="n">20</td><td class="n">₹27</td></tr>
+          </tbody></table></div>
+        <p class="cap">All with 0 leads. "near me" queries took 5,342 impressions and ₹1,318.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ META ADS ============ -->
+  <section class="band" id="meta" data-tab="meta">
+    <div class="band-head">
+      <div><div class="eyebrow">Meta Ads · Facebook &amp; Instagram · Jan–1 Oct</div><h2>₹6.99 lakh across 146 campaigns</h2></div>
+      <p>From the Ads Manager campaign export. Meta's own "results" use different goals per campaign (chats, calls, form leads, reach), so leads are taken from the Meta lead sheet in the CRM.</p>
+    </div>
+    <div class="statrow card" style="flex-direction:row">
+      <div class="big"><span class="eyebrow">Spend</span><span class="v num">₹6.99L</span><span class="cap">₹8.25L incl. 18% GST</span></div>
+      <div class="big"><span class="eyebrow">Impressions</span><span class="v num">7.16M</span><span class="cap">₹98 per 1,000</span></div>
+      <div class="big"><span class="eyebrow">Campaigns</span><span class="v num">146</span><span class="cap">3 active today</span></div>
+      <div class="big"><span class="eyebrow">Leads (CRM sheet)</span><span class="v num">1,194</span><span class="cap">₹414 per lead</span></div>
+      <div class="big"><span class="eyebrow">Meta-reported</span><span class="v num">1,085</span><span class="cap">624 chats · 193 forms · 157 calls · 111 clicks</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Spend by product</h3>
+        <div class="chart tall"><canvas id="cMetaProd" role="img" aria-label="Meta spend by product"></canvas></div>
+        <p class="insight"><b>Corporate outings and weddings took 63% of Meta spend.</b> Hiring ads (₹4.6k) also ran from the marketing account.</p>
+      </div>
+      <div class="card">
+        <h3>Cost per Meta lead, by product</h3>
+        <div class="chart tall"><canvas id="cMetaCpl" role="img" aria-label="Cost per Meta lead by product"></canvas></div>
+        <p class="insight"><b>Birthday leads cost ₹202; weddings ₹871.</b> Spend is Jan–Oct; leads are the Jun–Sep sheet, so early-year products look costlier than they are.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Meta spend by month</h3>
+        <div class="chart short"><canvas id="cMetaMonth" role="img" aria-label="Meta spend by month"></canvas></div>
+        <p class="cap">By campaign end month; campaigns still running on 1 Oct are counted in September.</p>
+      </div>
+      <div class="card">
+        <h3>Best cost per result</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Campaign</th><th>Result</th><th class="n">Results</th><th class="n">Cost each</th></tr></thead>
+          <tbody>
+            <tr><td>Day-Outing-Campaign-GCC-1</td><td>Lead forms</td><td class="n">53</td><td class="n"><span class="pill good">₹22</span></td></tr>
+            <tr><td>Day-Out-GCC-E-City-01</td><td>WhatsApp chats</td><td class="n">176</td><td class="n"><span class="pill good">₹29</span></td></tr>
+            <tr><td>Day-Out-E-City-P2-GCC-01</td><td>WhatsApp chats</td><td class="n">148</td><td class="n"><span class="pill good">₹33</span></td></tr>
+            <tr><td>ipl-cl (June)</td><td>Calls</td><td class="n">22</td><td class="n"><span class="pill good">₹41</span></td></tr>
+            <tr><td>Room-Stay-Campaign-01</td><td>Calls</td><td class="n">25</td><td class="n"><span class="pill good">₹70</span></td></tr>
+            <tr><td>Premium B'day Celebration (active)</td><td>Lead forms</td><td class="n">70</td><td class="n"><span class="pill warn">₹129</span></td></tr>
+            <tr><td>Corporate-Day-Out-Kerv (active)</td><td>Lead forms</td><td class="n">34</td><td class="n"><span class="pill warn">₹235</span></td></tr>
+          </tbody></table></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Biggest campaigns</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Campaign</th><th>Product</th><th class="n">Spend</th><th class="n">Impressions</th><th>Meta result</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>Wedding-Venue-Ad-GCC-V2.2</td><td>Wedding</td><td class="n">₹76,413</td><td class="n">301,855</td><td>5 leads (₹15,283 each)</td><td><span class="pill bad">Too costly</span></td></tr>
+          <tr><td>Wedding-Ad-GCCE-01 (active)</td><td>Wedding</td><td class="n">₹51,246</td><td class="n">255,963</td><td>Not recorded</td><td><span class="pill warn">Set a lead goal</span></td></tr>
+          <tr><td>Corporate-Team-Outing-GCCE-02</td><td>Corporate</td><td class="n">₹45,551</td><td class="n">270,361</td><td>Not recorded</td><td><span class="pill warn">Check CRM leads</span></td></tr>
+          <tr><td>Birthday-Party-Venue-Ad-GCCE-01</td><td>Birthday</td><td class="n">₹43,590</td><td class="n">183,904</td><td>Not recorded</td><td><span class="pill warn">Check CRM leads</span></td></tr>
+          <tr><td>Corporate-Day-Outing-GCC</td><td>Corporate</td><td class="n">₹31,091</td><td class="n">228,436</td><td>Not recorded</td><td><span class="pill warn">Check CRM leads</span></td></tr>
+          <tr><td>Corporate-Day-Outing-2-GCC</td><td>Corporate</td><td class="n">₹30,961</td><td class="n">160,796</td><td>Not recorded</td><td><span class="pill warn">Check CRM leads</span></td></tr>
+          <tr><td>Lead-Ad-Ecity-Corporate-Day-Out</td><td>Corporate</td><td class="n">₹20,247</td><td class="n">57,725</td><td>4 leads (₹5,062 each)</td><td><span class="pill bad">Too costly</span></td></tr>
+          <tr><td>Sunday-Brunch-GCC-E-City--01</td><td>Brunch</td><td class="n">₹19,633</td><td class="n">97,835</td><td>Not recorded</td><td><span class="pill neutral">Review</span></td></tr>
+        </tbody></table></div>
+      <p class="cap">99 of 146 campaigns show no result in the export. Fewer, longer campaigns per product, each with one lead goal, would make results comparable and let Meta optimise.</p>
+    </div>
+  </section>
+
+  <!-- ============ ORGANIC / SERP ============ -->
+  <section class="band" id="seo" data-tab="web">
+    <div class="band-head">
+      <div><div class="eyebrow">Search Console · SERP</div><h2>Organic search</h2></div>
+      <p>www property, 7–28 Sep (new site went live 7 Sep). 920 clicks, 24,151 impressions, 3.8% CTR, average position 4.5.</p>
+    </div>
+    <div class="grid g21">
+      <div class="card">
+        <h3 id="gscTitle">Organic clicks per day, September</h3>
+        <div class="chart"><canvas id="cGsc" role="img" aria-label="Organic clicks per day"></canvas></div>
+        <div class="tabs" role="group" aria-label="Search metric"><button class="tabbtn gsc" aria-pressed="true" data-g="c">Clicks</button><button class="tabbtn gsc" aria-pressed="false" data-g="i">Impressions</button><button class="tabbtn gsc" aria-pressed="false" data-g="a">AI features</button></div>
+        <p class="insight">Clicks jumped from ~20 to <b>55–86 a day</b> once the new homepage took the brand result on 17 Sep. <b>98% of clicks are brand searches.</b> Google's AI features showed the site 2,936 times, up from 55 to 200+ a day.</p>
+      </div>
+      <div class="card">
+        <h3>Non-brand rankings</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Query</th><th class="n">Pos.</th><th class="n">Impr.</th></tr></thead>
+          <tbody>
+            <tr><td>resort near me</td><td class="n"><span class="pill good">1.0</span></td><td class="n">37</td></tr>
+            <tr><td>resorts near electronic city</td><td class="n"><span class="pill good">4.3</span></td><td class="n">4</td></tr>
+            <tr><td>resort near chandapura</td><td class="n"><span class="pill good">5.4</span></td><td class="n">10</td></tr>
+            <tr><td>resort near hsr layout</td><td class="n"><span class="pill warn">8.0</span></td><td class="n">17</td></tr>
+            <tr><td>resort near e-city for day outing</td><td class="n"><span class="pill warn">9.2</span></td><td class="n">37</td></tr>
+            <tr><td>resorts near e-city for day outing</td><td class="n"><span class="pill warn">10.0</span></td><td class="n">87</td></tr>
+            <tr><td>resort in electronic city</td><td class="n"><span class="pill warn">10.2</span></td><td class="n">22</td></tr>
+            <tr><td>resorts in bangalore for day outing</td><td class="n"><span class="pill bad">27.3</span></td><td class="n">41</td></tr>
+          </tbody></table></div>
+        <p class="cap">Positions 8–12 are the bottom of page one: the quickest organic wins.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Top landing pages from Google</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Page</th><th class="n">Clicks</th><th class="n">Impressions</th><th class="n">CTR</th><th class="n">Position</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Homepage</td><td class="n">778</td><td class="n">14,512</td><td class="n">5.36%</td><td class="n">2.7</td><td><span class="pill good">Brand engine</span></td></tr>
+          <tr><td>/day-outing/</td><td class="n">57</td><td class="n">6,774</td><td class="n">0.84%</td><td class="n">3.6</td><td><span class="pill warn">Improve snippet</span></td></tr>
+          <tr><td>/stay/</td><td class="n">14</td><td class="n">6,423</td><td class="n">0.22%</td><td class="n">3.1</td><td><span class="pill bad">Rewrite title</span></td></tr>
+          <tr><td>/near/chandapura/</td><td class="n">11</td><td class="n">449</td><td class="n">2.45%</td><td class="n">8.9</td><td><span class="pill neutral">Locality page works</span></td></tr>
+          <tr><td>/day-outing/packages-and-prices/</td><td class="n">10</td><td class="n">915</td><td class="n">1.09%</td><td class="n">7.3</td><td></td></tr>
+          <tr><td>/weddings/</td><td class="n">2</td><td class="n">109</td><td class="n">1.83%</td><td class="n">5.5</td><td><span class="pill bad">No organic reach</span></td></tr>
+        </tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ GBP ============ -->
+  <section class="band" id="gbp" data-tab="maps">
+    <div class="band-head">
+      <div><div class="eyebrow">Google Business Profile · Maps</div><h2>The real front door</h2></div>
+      <p>479k profile views Apr–Sep and 52.2k interactions. Ads per-store report (Jul–Sep): 120k local impressions, 4,087 direction requests, 224 store visits.</p>
+    </div>
+    <div class="kpis">
+      <div class="kpi" style="--k:var(--s2)"><span class="eyebrow">Calls from profile</span><span class="v num">564</span><span class="delta down">▼ 65% vs May (1,612)</span><span class="sub">September</span></div>
+      <div class="kpi" style="--k:var(--s3)"><span class="eyebrow">Direction requests</span><span class="v num">7,369</span><span class="delta up">▲ 50% vs April</span><span class="sub">September</span></div>
+      <div class="kpi" style="--k:var(--s1)"><span class="eyebrow">Website clicks</span><span class="v num">496</span><span class="delta down">▼ 46% vs July</span><span class="sub">September</span></div>
+      <div class="kpi" style="--k:var(--s4)"><span class="eyebrow">Google rating</span><span class="v num">3.9★</span><span class="delta warnd">5,413 reviews</span><span class="sub">272 more 5★ reviews reach 4.0</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Direction requests per month</h3>
+        <div class="chart short"><canvas id="cGbpDir" role="img" aria-label="Direction requests per month"></canvas></div>
+        <p class="insight">Directions grew <b>50% since April</b>: people still find the resort on Maps and drive there.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end"><h3>Calls and website clicks per month</h3>
+        <div class="legend"><span><i style="background:var(--s2)"></i>Calls</span><span><i style="background:var(--s1)"></i>Website clicks</span></div></div>
+        <div class="chart short"><canvas id="cGbpCalls" role="img" aria-label="Calls and website clicks per month"></canvas></div>
+        <p class="insight">Calls fell every month after May, <b>1,612 → 564</b>, while directions held. That points at the phone line, not demand.</p>
+      </div>
+    </div>
+    <p class="cap" style="margin-top:8px">April–September from the Business Profile performance report. Start and end values are exact; middle months are read from the audit chart and rounded to the nearest 10.</p>
+    <div class="card" style="margin-top:14px">
+      <div class="cardhead"><h3>Actions taken on the profile · September 2026</h3><span class="pill good">45 changes live or in review</span></div>
+      <div class="done">
+        <div class="dcard"><div class="top"><b class="big2">+4</b><span class="pill warn">In review</span></div><h4>Categories</h4><p>Conference Centre, Swimming pool, Buffet restaurant, Adventure Sports Center. Resort hotel kept primary; 8 of 10 slots used.</p></div>
+        <div class="dcard"><div class="top"><b class="big2">0 → 17</b><span class="pill good">Live</span></div><h4>Services with prices</h4><p>Day Outing ₹1,499, Corporate Offsite ₹1,999, Sunday Brunch ₹1,499, Resort Stay ₹3,999, Adventure ₹1,699, Event Catering ₹1,199, wedding lawns, banquet and conference halls and more.</p></div>
+        <div class="dcard"><div class="top"><b class="big2">80 → 100%</b><span class="pill good">Live</span></div><h4>Review replies</h4><p>All 20 unanswered reviews in the latest 100 answered, including five 1★ and 2★, each specific to the guest.</p></div>
+        <div class="dcard"><div class="top"><b class="big2">+3</b><span class="pill warn">Publishing</span></div><h4>Linked posts</h4><p>Pool day from ₹1,499, conference &amp; offsite venue, banquet hall in E-City Phase II. Each links to its page with UTM tags.</p></div>
+        <div class="dcard"><div class="top"><b class="big2">11:30–3:30</b><span class="pill good">Live</span></div><h4>Sunday brunch hours</h4><p>Added after a 1★ review from a guest who arrived after brunch had closed.</p></div>
+        <div class="dcard"><div class="top"><b class="big2">11 · 20+</b><span class="pill good">Done</span></div><h4>Maps benchmark</h4><p>11 local searches checked against 20+ competitors within 20 km; keyword map built for 11 service clusters.</p></div>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Next 30 days</h3>
+        <div class="plan">
+          <div class="pl"><span class="when">This week</span><div><h4>Find the lost calls</h4><p>Test 090358 00200 at 11 AM, 4 PM and 8 PM on a Saturday. If it rings out, add a second number or route profile chat to WhatsApp.</p></div><span class="pill bad">Urgent</span></div>
+          <div class="pl"><span class="when">This week</span><div><h4>Review engine</h4><p>QR table cards and a WhatsApp review link after every visit. Target 15 genuine 5★ a week.</p></div><span class="pill bad">Urgent</span></div>
+          <div class="pl"><span class="when">Weekly</span><div><h4>Two posts a week</h4><p>Hall, pool day, brunch, conference, wedding lawns, Diwali and New Year, each naming an area.</p></div><span class="pill neutral">Ongoing</span></div>
+          <div class="pl"><span class="when">Week 2</span><div><h4>40 real photos</h4><p>Pool with people, banquet set for 300, lawn with stage, each room type, brunch, conference, zipline.</p></div><span class="pill warn">Shoot</span></div>
+          <div class="pl"><span class="when">Week 2</span><div><h4>Name + address fix</h4><p>One edit, with video verification ready.</p></div><span class="pill warn">Owner</span></div>
+          <div class="pl"><span class="when">Week 3</span><div><h4>Test Maps ads</h4><p>₹500/day on "banquet hall" and "conference hall electronic city".</p></div><span class="pill neutral">Budget</span></div>
+          <div class="pl"><span class="when">Day 30</span><div><h4>Re-check</h4><p>Same 11 searches; calls, directions and website clicks against this report.</p></div><span class="pill neutral">Measure</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Waiting on a decision</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Item</th><th>Why it matters</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Business name</td><td>Lowercase "bangalore" breaks Google's naming rules</td><td><span class="pill bad">Owner</span></td></tr>
+            <tr><td>Address line</td><td>96 characters, limit 80; Google flags it</td><td><span class="pill bad">Owner</span></td></tr>
+            <tr><td>Booking link</td><td>2 clicks in 6 months; shows Yatra/Skyscanner prices</td><td><span class="pill warn">Budget</span></td></tr>
+            <tr><td>Amenity answers</td><td>Tennis, airport shuttle, free breakfast need checking</td><td><span class="pill warn">Verify</span></td></tr>
+            <tr><td>Review follow-through</td><td>Four replies promise action by F&amp;B and front office</td><td><span class="pill bad">Today</span></td></tr>
+            <tr><td>Review pattern</td><td>~24 of the latest 100 five-stars from 0–1-review accounts</td><td><span class="pill bad">Stop now</span></td></tr>
+            <tr><td>Chat / messaging</td><td>Currently off</td><td><span class="pill neutral">Decide</span></td></tr>
+          </tbody></table></div>
+        <p class="cap">Offers: 402 views, 119 engagements. Google says the room rate is ₹401 below properties people also view.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>Google reviews within 20 km</h3>
+        <div class="chart tall"><canvas id="cReviews" role="img" aria-label="Competitor review counts"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Maps visibility for key searches</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Search on Maps</th><th>Gold Coins</th></tr></thead>
+          <tbody>
+            <tr><td>resort in electronic city</td><td><span class="pill good">#1</span></td></tr>
+            <tr><td>resorts near electronic city</td><td><span class="pill good">#1</span></td></tr>
+            <tr><td>corporate team outing near e-city</td><td><span class="pill warn">#9</span></td></tr>
+            <tr><td>day outing resorts in bangalore</td><td><span class="pill bad">Not listed</span></td></tr>
+            <tr><td>banquet hall in electronic city</td><td><span class="pill bad">Not listed</span></td></tr>
+            <tr><td>wedding venue in electronic city</td><td><span class="pill bad">Not listed</span></td></tr>
+            <tr><td>birthday party venue electronic city</td><td><span class="pill bad">Not listed</span></td></tr>
+            <tr><td>sunday brunch electronic city</td><td><span class="pill bad">Not listed</span></td></tr>
+          </tbody></table></div>
+        <p class="insight">Calls fell while directions rose. <b>Test the 090358 00200 line</b>: it is on every ad and the profile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIENCE ============ -->
+  <section class="band" id="audience" data-tab="web">
+    <div class="band-head">
+      <div><div class="eyebrow">GA4 · Audience</div><h2>Who visits</h2></div>
+      <p>1 Jan – 1 Oct 2026. About 2,000 users are bots (Singapore at 1.3 s average, US data-centre towns).</p>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>Device</h3><div class="chart short"><canvas id="cDevice" role="img" aria-label="Users by device"></canvas></div><p class="cap">79% mobile. Design every landing page phone-first.</p></div>
+      <div class="card"><h3>Top cities</h3><div class="chart short"><canvas id="cCity" role="img" aria-label="Users by city"></canvas></div><p class="cap">Bengaluru is 81% of users. Singapore traffic is bot noise.</p></div>
+      <div class="card"><h3>Most-viewed pages</h3><div class="chart short"><canvas id="cPages" role="img" aria-label="Page views"></canvas></div><p class="cap">Excludes the Google-hosted PMax page (35,694 views).</p></div>
+    </div>
+  </section>
+
+  <!-- ============ ACTIONS ============ -->
+  <section class="band" id="actions" data-tab="actions">
+    <div class="band-head">
+      <div><div class="eyebrow">What to do next</div><h2>Priorities before the next ad rupee</h2></div>
+    </div>
+    <div class="actions">
+      <div class="action"><div><h3>Mark leads as key events and link GA4 to Google Ads</h3><p>generate_lead, whatsapp_click and phone_click become key events; import them into Ads as primary conversions.</p></div><span class="pill bad">This week</span></div>
+      <div class="action"><div><h3>Test the bookings phone line</h3><p>Call 090358 00200 at 11 AM, 4 PM and 8 PM on a Saturday. Profile calls fell 65%.</p></div><span class="pill bad">This week</span></div>
+      <div class="action"><div><h3>Redirect the old site to www</h3><p>One Cloudflare 301 rule; regenerate the sitemap; 803 views landed on "Page not found".</p></div><span class="pill bad">This week</span></div>
+      <div class="action"><div><h3>Record where every enquiry came from</h3><p>82% of CRM enquiries say only "IVR". Ask and log Google search, Maps, Instagram/Facebook, ads or referral so bookings can be tied to spend.</p></div><span class="pill bad">This week</span></div>
+      <div class="action"><div><h3>Cut Meta to one campaign per product</h3><p>146 campaigns in 9 months, 99 with no recorded result. Run 4–5 always-on lead campaigns (corporate, wedding, birthday, day out, brunch) and move budget toward birthday and day-out leads at ₹22–202.</p></div><span class="pill warn">Weeks 2–4</span></div>
+      <div class="action"><div><h3>Relaunch the Wedding Search campaign only</h3><p>Phrase and exact match, AI Max off, ₹60 CPC cap. October–December is the enquiry window for 2027 weddings.</p></div><span class="pill warn">Weeks 2–4</span></div>
+      <div class="action"><div><h3>Add a Venues &amp; Halls campaign and a Brand campaign</h3><p>Banquet, party and conference hall searches near E-City show no Gold Coins listing today.</p></div><span class="pill warn">Weeks 2–4</span></div>
+      <div class="action"><div><h3>Work the open pipeline</h3><p>₹14.3Cr is marked new or ongoing. Akhil and Hemanth hold ₹4.6Cr; clean the ₹6.2Cr February entry first.</p></div><span class="pill warn">Weeks 2–4</span></div>
+      <div class="action"><div><h3>Grow reviews to 4.0★ and lift page-one organic terms</h3><p>QR and WhatsApp review requests after every visit; FAQ and LocalBusiness schema; rewrite the /stay/ snippet.</p></div><span class="pill good">Month 2+</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Sources: Sales CRM (read 1 Oct 2026); GA4 property "Gold Coins" exports (1 Jan – 1 Oct 2026); Gold Coins audit of 1 Oct 2026 (Google Ads, Search Console, Business Profile). Monthly GA4 values are estimates from weekly totals.</span>
+    <span>Ad spend excludes 18% GST. Leads are GA4 first-touch enquiry-form leads unless stated.</span>
+  </footer>
+</main>
+
+<script>
+/* ===== DATA (edit here when new exports arrive) ===== */
+const MONTHS = [
+  {k:"May", label:"May", partial:"from 24 May", users:740,  newUsers:734,  eng:83.9, engRate:87.0, spend:0, adClicks:0,     gscClicks:null, gbpCalls:1612, gbpDir:6780, gbpWeb:880, crmEnq:290, crmWon:94, crmVal:1563578},
+  {k:"Jun", label:"June",                          users:3798, newUsers:3628, eng:90.8, engRate:84.8, spend:0, adClicks:0,     gscClicks:null, gbpCalls:1170, gbpDir:7070, gbpWeb:880, crmEnq:575, crmWon:117, crmVal:2488606},
+  {k:"Jul", label:"July",                          users:5677, newUsers:5509, eng:57.1, engRate:61.7, spend:33001, adClicks:7060, gscClicks:null, gbpCalls:980, gbpDir:7560, gbpWeb:919, crmEnq:812, crmWon:121, crmVal:6114643},
+  {k:"Aug", label:"August",                        users:3872, newUsers:3711, eng:55.5, engRate:64.8, spend:9362, adClicks:3144,  gscClicks:null, gbpCalls:730, gbpDir:7270, gbpWeb:780, crmEnq:720, crmWon:104, crmVal:3706365},
+  {k:"Sep", label:"September",                     users:20962,newUsers:20430,eng:22.6, engRate:46.6, spend:36941, adClicks:32094, gscClicks:920,  gbpCalls:564, gbpDir:7369, gbpWeb:496, crmEnq:682, crmWon:96, crmVal:3888623},
+];
+const WEEKS = {
+  label:["24 May","31 May","7 Jun","14 Jun","21 Jun","28 Jun","5 Jul","12 Jul","19 Jul","26 Jul","2 Aug","9 Aug","16 Aug","23 Aug","30 Aug","6 Sep","13 Sep","20 Sep","27 Sep"],
+  newUsers:[597,962,997,716,778,729,683,1124,2001,1499,984,1493,534,460,92,4018,10282,5678,483],
+  ads:[0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0]
+};
+const SPEND_W = {label:["13 Jul","20 Jul","27 Jul","3 Aug","10 Aug","17 Aug","24 Aug","31 Aug","7 Sep","14 Sep","21 Sep","28 Sep"], v:[15333,15454,3099,3205,5272,0,0,0,11290,17119,8532,0], clicks:[2064,4417,810,779,2134,0,0,0,9157,15736,7201,1]};
+const GSC = {label:Array.from({length:22},(_,i)=>(i+7)+" Sep"), v:[2,6,23,21,24,20,9,9,14,17,61,56,41,44,86,79,84,80,66,55,44,79],
+  impr:[412,512,1117,1010,1170,1176,754,749,978,1186,1229,1624,1087,1161,1315,1154,1231,1303,1262,1492,987,1242],
+  ai:[55,42,57,60,87,60,40,71,115,206,170,209,202,164,292,173,187,209,134,133,108,162]};
+const GBP = {label:["Apr","May","Jun","Jul","Aug","Sep"], dir:[4913,6780,7070,7560,7270,7369], calls:[1370,1612,1170,980,730,564], web:[830,880,880,919,780,496]};
+let gscView="c";
+
+/* ===== helpers ===== */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = n => n==null ? "—" : n.toLocaleString("en-IN");
+const inr = n => "₹" + (n>=1000 ? (n/1000).toFixed(1)+"k" : n);
+let sel = "Sep";
+const KC=["var(--s1)","var(--s7)","var(--s3)","var(--s5)","var(--s2)","var(--s4)","var(--s3)","var(--s1)","var(--s7)"];
+
+function deltaHTML(cur, prev, opts={}){
+  if(cur==null || prev==null) return `<span class="delta flat">no prior month</span>`;
+  if(prev===0) return cur===0 ? `<span class="delta flat">— no change</span>` : `<span class="delta ${opts.neutral?'flat':'up'}">▲ new vs 0</span>`;
+  const pct = (cur-prev)/prev*100, up = pct>=0, a = Math.abs(pct);
+  const cls = opts.neutral ? "flat" : (up ? "up" : "down");
+  return `<span class="delta ${cls}">${up?"▲":"▼"} ${a>=100?Math.round(a):a.toFixed(1)}% vs ${opts.prevLabel}</span>`;
+}
+
+const SCM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"];
+const SC={
+  won:[0,0,5193927,3848776,1563578,2488606,6114643,3706365,3888623],
+  bk:[0,0,90,157,94,117,121,104,96],
+  enq:[1033,557,272,647,290,575,812,720,682],
+  meta:[14959,35200,2607,51104,100393,20922,176643,105727,191460],
+  goog:[0,0,0,0,0,0,33001,9362,36941],
+  mleads:[null,null,null,null,null,160,278,340,179],
+  users:[null,null,null,null,740,3798,5677,3872,20962],
+  calls:[null,null,null,1370,1612,1170,980,730,564]
+};
+SC.spend=SC.meta.map((v,i)=>v+SC.goog[i]);
+SC.conv=SC.enq.map((e,i)=>SC.bk[i]?Math.round(SC.bk[i]/e*1000)/10:null);
+SC.cac=SC.spend.map((v,i)=>SC.bk[i]?Math.round(v/SC.bk[i]):null);
+const inrS=v=>v==null?"—":"₹"+short(v);
+function spark(series,idx,col){
+  const W=120,H=34,pts=series.map((v,i)=>v==null?null:[i,v]).filter(Boolean); if(pts.length<2) return "";
+  const mx=Math.max(...pts.map(p=>p[1])),mn=Math.min(0,...pts.map(p=>p[1])); const X=i=>4+i*(W-8)/(series.length-1), Y=v=>H-4-(v-mn)/((mx-mn)||1)*(H-10);
+  const d=pts.map((p,j)=>(j?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join(" ");
+  const area=d+` L${X(pts[pts.length-1][0]).toFixed(1)} ${H} L${X(pts[0][0]).toFixed(1)} ${H} Z`;
+  const sel=idx!=null&&series[idx]!=null?`<circle cx="${X(idx).toFixed(1)}" cy="${Y(series[idx]).toFixed(1)}" r="3.6" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`:"";
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${area}" fill="${col}" opacity=".12"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${sel}</svg>`;
+}
+function dl(cur,prev,invert,prevLabel){
+  if(cur==null||prev==null||prev===0) return `<span class="delta flat">${prevLabel?"no "+prevLabel+" data":"—"}</span>`;
+  const pct=(cur-prev)/Math.abs(prev)*100, up=pct>=0, good=invert?!up:up;
+  return `<span class="delta ${good?"up":"down"}">${up?"▲":"▼"} ${Math.abs(pct)>=100?Math.round(Math.abs(pct)):Math.abs(pct).toFixed(1)}% vs ${prevLabel}</span>`;
+}
+function renderMonths(){
+  const el=document.getElementById("months");
+  el.innerHTML=`<button type="button" data-k="All" aria-pressed="${sel==="All"}">All time</button>`+SCM.map(m=>`<button type="button" data-k="${m}" aria-pressed="${m===sel}">${m}</button>`).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{sel=b.dataset.k;try{localStorage.setItem("gc-month",sel)}catch(e){};renderMonths();renderKPIs();highlight();});
+}
+function renderKPIs(){
+  const all=sel==="All", i=all?null:SCM.indexOf(sel), p=i>0?i-1:null, pl=p!=null?SCM[p]:"";
+  const sum=a=>a.reduce((x,y)=>x+(y||0),0);
+  const pick=(k)=>all?null:SC[k][i], prev=(k)=>p==null?null:SC[k][p];
+  const T=[
+    {t:"Booking value won",v:all?"₹2.69Cr":inrS(pick("won")),d:all?`<span class="delta up">₹14.3Cr open pipeline</span>`:dl(pick("won"),prev("won"),false,pl),k:"won",c:"var(--s3)",s:"Sales CRM"},
+    {t:"Bookings",v:all?"788":fmt(pick("bk")),d:all?`<span class="delta flat">Mar–Oct (tracked)</span>`:dl(pick("bk"),prev("bk"),false,pl),k:"bk",c:"var(--s3)",s:"Onboarded in CRM"},
+    {t:"Enquiries",v:all?"5,621":fmt(pick("enq")),d:all?`<span class="delta flat">82% by phone (IVR)</span>`:dl(pick("enq"),prev("enq"),false,pl),k:"enq",c:"var(--s1)",s:"All channels"},
+    {t:"Enquiry → booking",v:all?"14%":(pick("conv")==null?"—":pick("conv")+"%"),d:all?`<span class="delta down">▼ from 32% in May</span>`:dl(pick("conv"),prev("conv"),false,pl),k:"conv",c:"var(--s7)",s:"Conversion rate"},
+    {t:"Marketing spend",v:all?"₹7.78L":inrS(pick("spend")),d:all?`<span class="delta flat">Meta ₹6.99L · Google ₹79k</span>`:dl(pick("spend"),prev("spend"),true,pl),k:"spend",c:"var(--s2)",s:"Ads, excl. GST"},
+    {t:"Cost per booking",v:all?"₹988":inrS(pick("cac")),d:all?`<span class="delta down">▲ ₹469 → ₹1,723 Q2→Q3</span>`:dl(pick("cac"),prev("cac"),true,pl),k:"cac",c:"var(--s5)",s:"Blended: spend ÷ bookings"},
+    {t:"Meta leads",v:all?"1,194":fmt(pick("mleads")),d:all?`<span class="delta flat">₹414 per lead</span>`:dl(pick("mleads"),prev("mleads"),false,pl),k:"mleads",c:"var(--s7)",s:"Unique, Meta lead sheet"},
+    {t:"Website users",v:all?"33.9k":fmt(pick("users")),d:all?`<span class="delta flat">since 24 May</span>`:dl(pick("users"),prev("users"),false,pl),k:"users",c:"var(--s1)",s:"GA4"},
+  ];
+  document.getElementById("kpis").innerHTML=T.map(x=>`<div class="kpi" style="--k:${x.c}"><div class="kh"><span class="eyebrow">${x.t}</span>${spark(SC[x.k],i,x.c)}</div><span class="v num">${x.v}</span>${x.d}<span class="sub">${x.s}</span></div>`).join("");
+  const hl=document.getElementById("headline"), le=document.getElementById("lede");
+  if(all){hl.textContent="2026 so far: 788 bookings worth ₹2.69 crore"; le.textContent="₹7.78 lakh of ads (90% Meta) sat behind 5,621 enquiries and ₹2.69 crore of bookings. Spend tripled from Q2 to Q3 while bookings fell 13%, so each booking now costs about ₹1,700 in ads, up from ₹469.";}
+  else{const M={Jan:"January",Feb:"February",Mar:"March",Apr:"April",May:"May",Jun:"June",Jul:"July",Aug:"August",Sep:"September"}[sel];
+    hl.textContent=`${M}: ${fmt(SC.enq[i])} enquiries, ${fmt(SC.bk[i])} bookings`;
+    le.textContent=`Bookings worth ${inrS(SC.won[i])} against ${inrS(SC.spend[i])} of ads (Meta ${inrS(SC.meta[i])}, Google ${inrS(SC.goog[i])}).`+(SC.bk[i]?` Conversion ${SC.conv[i]}%, ${inrS(SC.cac[i])} of ads per booking.`:" Booking status was not recorded this month.")+" Meta spend is counted in the month each campaign ended.";}
+}
+function momTable(){
+  const rows = [
+    ["Users (est.)", m=>m.users, fmt],
+    ["New users (est.)", m=>m.newUsers, fmt],
+    ["Avg engagement (s)", m=>m.eng, v=>v.toFixed(0)],
+    ["Engaged sessions / user", m=>m.engRate, v=>v.toFixed(0)+"%"],
+    ["Google Ads spend", m=>m.spend, v=>v?inr(v):"₹0"],
+    ["Ad clicks", m=>m.adClicks, fmt],
+    ["CRM enquiries", m=>m.crmEnq, fmt],
+    ["Bookings won", m=>m.crmWon, fmt],
+    ["Won value", m=>m.crmVal, v=>"₹"+(v/1e5).toFixed(1)+"L"],
+    ["Profile calls", m=>m.gbpCalls, fmt],
+    ["Profile directions", m=>m.gbpDir, fmt],
+    ["Profile website clicks", m=>m.gbpWeb, fmt],
+  ];
+  let h = `<thead><tr><th>Metric</th>${MONTHS.map(m=>`<th class="n" data-k="${m.k}">${m.k}${m.partial?'*':''}</th>`).join("")}</tr></thead><tbody>`;
+  rows.forEach(([name,get,f],ri)=>{
+    h += `<tr><td>${name}</td>` + MONTHS.map((m,i)=>{
+      const v=get(m), pv=i?get(MONTHS[i-1]):null;
+      let arrow="";
+      if(i>0 && pv){const up=v>=pv; arrow = ri===4 ? `<span style="color:var(--ink-3)"> ${up?"▲":"▼"}</span>` : `<span style="color:var(${up?"--good":"--bad"})"> ${up?"▲":"▼"}</span>`;}
+      return `<td class="n" data-k="${m.k}">${f(v)}${arrow}</td>`;
+    }).join("") + `</tr>`;
+  });
+  document.getElementById("momTable").innerHTML = h + `</tbody>`;
+}
+
+/* ===== charts ===== */
+const charts = {};
+const isNarrow=()=>window.innerWidth<620;
+const short=v=>{const a=Math.abs(v); if(a>=1e7) return (v/1e7).toFixed(2).replace(/\.?0+$/,"")+"Cr"; if(a>=1e5) return (v/1e5).toFixed(1).replace(/\.0$/,"")+"L"; if(a>=1e3) return (v/1e3).toFixed(1).replace(/\.0$/,"")+"k"; return String(Math.round(v*10)/10);};
+const valueLabels={id:"valueLabels",afterDatasetsDraw(chart,args,opts){
+  if(!opts||!opts.fmt) return; const ctx=chart.ctx;
+  chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+    meta.data.forEach((el,i)=>{const v=ds.data[i]; if(v==null||(v===0&&!opts.zero)) return; if(opts.only&&!opts.only(i,v)) return; if(isNarrow()&&chart.options.indexAxis!=="y"&&ds.data.length>6&&v!==Math.max(...ds.data.filter(x=>x!=null))) return;
+      ctx.save(); ctx.font=`500 ${isNarrow()?10:11}px "IBM Plex Mono", monospace`; ctx.fillStyle=css("--ink-2");
+      if(chart.options.indexAxis==="y"){ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(opts.fmt(v),el.x+6,el.y);}
+      else{ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(opts.fmt(v),el.x,el.y-4);}
+      ctx.restore();});});}};
+function base(){
+  const fs=isNarrow()?10:11;
+  return {
+    responsive:true, maintainAspectRatio:false, animation:{duration:animMs,easing:"easeOutQuart"},
+    layout:{padding:{top:4}},
+    plugins:{legend:{display:false}, valueLabels:{},
+      tooltip:{backgroundColor:css("--navy"), titleColor:"#f5f1e6", bodyColor:"#e4e9f2", padding:{x:12,y:10}, cornerRadius:10, displayColors:false, caretSize:6, titleFont:{family:"IBM Plex Sans",weight:"600",size:12}, bodyFont:{family:"IBM Plex Mono",size:12}, boxPadding:4}},
+    scales:{
+      x:{grid:{display:false}, border:{color:css("--line")}, ticks:{color:css("--ink-3"), font:{family:"IBM Plex Sans",size:fs}, maxRotation:0, autoSkipPadding:8}},
+      y:{grid:{color:css("--line"), drawTicks:false}, border:{display:false, dash:[3,4]}, ticks:{color:css("--ink-3"), font:{family:"IBM Plex Mono",size:fs}, padding:6, callback:v=>short(v)}, beginAtZero:true}
+    }
+  };
+}
+function hbase(){const b=base(); b.indexAxis="y"; b.layout={padding:{right:isNarrow()?38:48}}; b.plugins.valueLabels={fmt:short}; b.scales.x.grid={color:css("--line"),drawTicks:false}; b.scales.x.border={display:false,dash:[3,4]}; b.scales.x.ticks={color:css("--ink-3"),font:{family:"IBM Plex Mono",size:isNarrow()?10:11},callback:v=>short(v),maxTicksLimit:isNarrow()?4:6}; b.scales.y.grid={display:false}; b.scales.y.border={display:false}; b.scales.y.ticks={color:css("--ink-2"),font:{family:"IBM Plex Sans",size:isNarrow()?10:11},padding:4,callback:function(v){const l=this.getLabelForValue(v); return isNarrow()&&l.length>18?l.slice(0,17)+"…":l;}}; return b;}
+function grad(chart,col){const {ctx,chartArea}=chart; if(!chartArea) return col+"33"; const g=ctx.createLinearGradient(0,chartArea.top,0,chartArea.bottom); g.addColorStop(0,col+"55"); g.addColorStop(1,col+"00"); return g;}
+function mk(id,cfg){ if(charts[id]) charts[id].destroy(); charts[id]=new Chart(document.getElementById(id),cfg); }
+const bar = {borderRadius:6, borderSkipped:"start", maxBarThickness:46, borderWidth:0};
+
+function monthColors(){return MONTHS.map(m=>m.k===sel?css("--accent"):css("--s1"));}
+function highlight(){
+  if(charts.cUsers){charts.cUsers.data.datasets[0].backgroundColor=monthColors();charts.cUsers.update("none");}
+  if(charts.cEng){const c=MONTHS.map(m=>m.k===sel?css("--accent"):css("--s1"));charts.cEng.data.datasets[0].pointBackgroundColor=c;charts.cEng.data.datasets[0].pointRadius=MONTHS.map(m=>m.k===sel?7:4);charts.cEng.update("none");}
+  document.querySelectorAll("#momTable [data-k]").forEach(c=>c.style.background=c.dataset.k===sel?"var(--accent-soft)":"");
+}
+
+let spendView="m";
+function drawSpend(){
+  const b=base(); b.scales.y.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)}; b.layout.padding.top=18;
+  b.plugins.tooltip.callbacks={label:c=>{const i=c.dataIndex, cl=spendView==="m"?MONTHS[i].adClicks:SPEND_W.clicks[i]; const v=c.parsed.y; return ["₹"+Math.round(v).toLocaleString("en-IN")+" spend", fmt(cl)+" clicks"+(cl?" · ₹"+(v/cl).toFixed(2)+" CPC":"")];}};
+  const d = spendView==="m" ? {labels:MONTHS.map(m=>m.k), v:MONTHS.map(m=>m.spend)} : {labels:SPEND_W.label, v:SPEND_W.v};
+  mk("cSpendM",{type:"bar",data:{labels:d.labels,datasets:[{data:d.v,backgroundColor:css("--s2"),...bar}]},options:b});
+}
+
+function drawAll(){
+  // users per month
+  let b=base(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.y)+" users"}; b.plugins.valueLabels={fmt:short}; b.layout.padding.top=18;
+  mk("cUsers",{type:"bar",data:{labels:MONTHS.map(m=>m.k+(m.partial?"*":"")),datasets:[{data:MONTHS.map(m=>m.users),backgroundColor:monthColors(),...bar}]},options:b});
+  // engagement
+  b=base(); b.plugins.tooltip.callbacks={label:c=>c.parsed.y.toFixed(1)+" s per user"};
+  mk("cEng",{type:"line",data:{labels:MONTHS.map(m=>m.k+(m.partial?"*":"")),datasets:[{data:MONTHS.map(m=>m.eng),borderColor:css("--s1"),borderWidth:2,tension:.3,fill:true,backgroundColor:c=>grad(c.chart,css("--s1")),pointBackgroundColor:css("--s1"),pointBorderColor:css("--surface"),pointBorderWidth:2,pointRadius:4,pointHoverRadius:7}]},options:b});
+  // weekly
+  b=base(); b.plugins.tooltip.callbacks={title:c=>"Week of "+c[0].label,label:c=>fmt(c.parsed.y)+" new users"+(WEEKS.ads[c.dataIndex]?" · ads running":" · no ads")};
+  b.scales.x.ticks.maxRotation=0; b.scales.x.ticks.autoSkip=true;
+  mk("cWeekly",{type:"bar",data:{labels:WEEKS.label,datasets:[{data:WEEKS.newUsers,backgroundColor:WEEKS.ads.map(a=>a?css("--s2"):css("--s1")),...bar,maxBarThickness:34}]},options:b});
+  // sessions by channel
+  const ch=["Cross-network (PMax)","Organic Search","Direct","Organic Social","Referral","Paid Search","AI Assistant"];
+  const chCol=[css("--s2"),css("--s3"),css("--s1"),css("--muted-series"),css("--muted-series"),css("--s4"),css("--s7")];
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" sessions ("+(c.parsed.x/44095*100).toFixed(0)+"%)"};
+  mk("cSessions",{type:"bar",data:{labels:ch,datasets:[{data:[25033,11023,5547,706,702,690,394],backgroundColor:chCol,...bar,maxBarThickness:22}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>c.parsed.x+" leads ("+(c.parsed.x/42*100).toFixed(0)+"%)"};
+  mk("cLeads",{type:"bar",data:{labels:ch,datasets:[{data:[2,31,4,0,3,0,2],backgroundColor:chCol,...bar,maxBarThickness:22}]},options:b});
+  // funnel
+  b=hbase(); b.scales.x.type="logarithmic"; b.scales.x.ticks.callback=v=>[10,100,1000,10000].includes(v)?fmt(v):"";
+  b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" users"};
+  mk("cFunnel",{type:"bar",data:{labels:["Visited site","Started a form","Used price calculator","Submitted a form","Clicked WhatsApp","Reached thank-you page","Tracked lead"],datasets:[{data:[33810,1709,1086,1501,296,44,43],backgroundColor:[css("--s1"),css("--s1"),css("--s3"),css("--s1"),css("--s3"),css("--s1"),css("--accent")],...bar,maxBarThickness:20}]},options:b});
+  // spend
+  drawSpend();
+  // ads deep-dive
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>["₹"+c.parsed.x.toLocaleString("en-IN"),["1 lead","2 leads","0 leads"][c.dataIndex]]}; b.scales.x.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)};
+  mk("cAimax",{type:"bar",data:{labels:["Your keywords","AI Max expanded matches","AI Max landing-page matches"],datasets:[{data:[18706,12515,5953],backgroundColor:[css("--s1"),css("--s2"),css("--s2")],...bar,maxBarThickness:22}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>["₹"+c.parsed.x.toLocaleString("en-IN"),fmt([1561,117,40621][c.dataIndex])+" clicks"]}; b.scales.x.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)};
+  mk("cNetwork",{type:"bar",data:{labels:["Performance Max (cross-network)","Google Search","Search partners"],datasets:[{data:[42147,36144,1013],backgroundColor:[css("--s2"),css("--s1"),css("--muted-series")],...bar,maxBarThickness:22}]},options:b});
+  const HR=[18108,9741,5589,3621,3069,4029,6321,12337,23417,33027,45021,53627,47925,42050,42338,39512,33996,31240,30046,36875,41200,36529,29132,14787];
+  b=base(); b.plugins.tooltip.callbacks={title:c=>c[0].label,label:c=>fmt(c.parsed.y)+" impressions"}; b.scales.y.ticks.callback=v=>(v/1000)+"k"; b.scales.x.ticks.maxRotation=0; b.scales.x.ticks.autoSkip=true; b.scales.x.ticks.maxTicksLimit=7;
+  mk("cHour",{type:"bar",data:{labels:["12a","1a","2a","3a","4a","5a","6a","7a","8a","9a","10a","11a","12p","1p","2p","3p","4p","5p","6p","7p","8p","9p","10p","11p"],datasets:[{data:HR,backgroundColor:HR.map((_,i)=>i<6?css("--muted-series"):css("--s1")),...bar,maxBarThickness:14}]},options:b});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.y)+" impressions"}; b.scales.y.ticks.callback=v=>(v/1000)+"k";
+  mk("cDay",{type:"bar",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{data:[57226,95214,111742,77907,91971,106339,103138],backgroundColor:css("--s1"),...bar,maxBarThickness:28}]},options:b});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>fmt([4555,9468,4087,1464,711,369][c.dataIndex])+" impressions ("+c.parsed.y+"% of known)"}; b.scales.y.ticks.callback=v=>v+"%";
+  mk("cAge",{type:"bar",data:{labels:["18–24","25–34","35–44","45–54","55–64","65+"],datasets:[{data:[22.1,45.9,19.8,7.1,3.4,1.8],backgroundColor:css("--s1"),...bar,maxBarThickness:28}]},options:b});
+  const SL=[["Day Out (wedding camp.)",14.62],["Birthday Part Venue",14.21],["Family Get-Togethers",12.60],["Weeding (Sep)",10.16],["Day Out (account)",10.02],["Stay – Pool Suites",8.85],["Birthday Party Venues",8.85],["Brunch (disapproved)",7.29],["Weeding (account)",7.22],["Stay (account)",6.15],["Corporate Events",4.76]];
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>c.parsed.x.toFixed(2)+"% CTR"}; b.scales.x.ticks.callback=v=>v+"%"; b.plugins.valueLabels={fmt:v=>v.toFixed(1)+"%"};
+  mk("cSitelinks",{type:"bar",data:{labels:SL.map(x=>x[0]),datasets:[{data:SL.map(x=>x[1]),backgroundColor:SL.map(x=>/Weeding|disapproved|Part Venue/.test(x[0])?css("--s4"):css("--s1")),...bar,maxBarThickness:16}]},options:b});
+  // landed
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>"₹"+c.parsed.x.toLocaleString("en-IN")}; b.scales.x.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)};
+  mk("cLanded",{type:"bar",data:{labels:["Google profile page (PMax)","New site (www)","Old site (campaign)","Call & message taps","Netlify test page","Old site (AI Max)"],datasets:[{data:[41919,12575,11261,9133,2336,2080],backgroundColor:[css("--s2"),css("--s3"),css("--muted-series"),css("--s1"),css("--muted-series"),css("--muted-series")],...bar,maxBarThickness:18}]},options:b});
+  drawGsc();
+  // gbp
+  b=base(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.y)+" direction requests"};
+  mk("cGbpDir",{type:"line",data:{labels:GBP.label,datasets:[{data:GBP.dir,borderColor:css("--s3"),borderWidth:2,tension:.3,fill:true,backgroundColor:c=>grad(c.chart,css("--s3")),pointRadius:4,pointBackgroundColor:css("--s3"),pointBorderColor:css("--surface"),pointBorderWidth:2}]},options:b});
+  b=base(); b.plugins.tooltip.displayColors=true; b.plugins.tooltip.callbacks={label:c=>" "+c.dataset.label+": "+fmt(c.parsed.y)}; b.interaction={mode:"index",intersect:false};
+  mk("cGbpCalls",{type:"line",data:{labels:GBP.label,datasets:[{label:"Calls",data:GBP.calls,borderColor:css("--s2"),backgroundColor:css("--s2"),borderWidth:2,tension:.3,pointRadius:4,pointBorderColor:css("--surface"),pointBorderWidth:2},{label:"Website clicks",data:GBP.web,borderColor:css("--s1"),backgroundColor:css("--s1"),borderWidth:2,tension:.3,pointRadius:4,pointBorderColor:css("--surface"),pointBorderWidth:2}]},options:b});
+  drawRest();
+}
+function drawGsc(){
+  const V={c:["Organic clicks per day, September",GSC.v,"clicks",css("--s3")],i:["Search impressions per day, September",GSC.impr,"impressions",css("--s1")],a:["Impressions in Google AI features per day",GSC.ai,"AI-feature impressions",css("--s7")]}[gscView];
+  document.getElementById("gscTitle").textContent=V[0];
+  let b=base(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.y)+" "+V[2]}; b.scales.x.ticks.maxRotation=0; b.scales.x.ticks.autoSkip=true; b.scales.x.ticks.maxTicksLimit=8;
+  mk("cGsc",{type:"line",data:{labels:GSC.label,datasets:[{data:V[1],borderColor:V[3],borderWidth:2,tension:.25,fill:true,backgroundColor:c=>grad(c.chart,V[3]),pointRadius:V[1].map((_,i)=>i===V[1].length-1?5:0),pointHoverRadius:6,pointBackgroundColor:V[3]}]},options:b});
+}
+function drawRest(){ let b;
+  const IM=SCM;
+  b=base(); b.plugins.tooltip.displayColors=true; b.interaction={mode:"index",intersect:false}; b.plugins.tooltip.callbacks={label:c=>" "+c.dataset.label+": ₹"+Math.round(c.parsed.y).toLocaleString("en-IN"),footer:it=>"Total: ₹"+Math.round(it.reduce((a,x)=>a+x.parsed.y,0)).toLocaleString("en-IN")}; b.scales.x.stacked=true; b.scales.y.stacked=true; b.scales.y.ticks.callback=v=>"₹"+short(v); b.scales.y.ticks.maxTicksLimit=4; b.layout.padding.top=18;
+  b.plugins.valueLabels={}; const stackTot={id:"stackTot",afterDatasetsDraw(ch){const m=ch.getDatasetMeta(1); const ctx=ch.ctx; m.data.forEach((el,i)=>{const t=SC.spend[i]; if(!t) return; if(isNarrow()&&t!==Math.max(...SC.spend)) return; ctx.save(); ctx.font=`500 ${isNarrow()?10:11}px "IBM Plex Mono", monospace`; ctx.fillStyle=css("--ink-2"); ctx.textAlign="center"; ctx.fillText("₹"+short(t),el.x,Math.min(el.y,ch.getDatasetMeta(0).data[i].y)-5); ctx.restore();});}};
+  mk("cInvSpend",{type:"bar",data:{labels:IM,datasets:[{label:"Meta",data:SC.meta,backgroundColor:css("--s7"),borderRadius:0,borderSkipped:false,maxBarThickness:34},{label:"Google Ads",data:SC.goog,backgroundColor:css("--s2"),borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:34}]},options:b,plugins:[stackTot]});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>"₹"+(c.parsed.y/1e5).toFixed(1)+" lakh in bookings won"}; b.scales.y.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)}; b.layout.padding.top=18; b.scales.y.ticks.maxTicksLimit=4;
+  mk("cInvWon",{type:"bar",data:{labels:IM,datasets:[{data:SC.won,backgroundColor:css("--s3"),...bar,maxBarThickness:34}]},options:b});
+  // meta
+  const MP=[["Corporate outing",247530],["Wedding",192519],["Birthday",82173],["Sunday brunch",80504],["School picnic",36317],["Day outing",27455],["IPL & cricket",10852],["Khingpar events",6656],["Room stay",5804],["Hiring",4582],["Other",4621]];
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>"₹"+c.parsed.x.toLocaleString("en-IN")+" ("+(c.parsed.x/699015*100).toFixed(1)+"%)"}; b.scales.x.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)};
+  mk("cMetaProd",{type:"bar",data:{labels:MP.map(x=>x[0]),datasets:[{data:MP.map(x=>x[1]),backgroundColor:MP.map((x,i)=>i<2?css("--s7"):x[0]==="Hiring"?css("--muted-series"):css("--s1")),...bar,maxBarThickness:18}]},options:b});
+  const CP=[["Birthday",202,407],["School picnic",460,79],["Sunday brunch",588,137],["Corporate outing",804,308],["Wedding",871,221]];
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>"₹"+c.parsed.x+" per lead ("+CP[c.dataIndex][2]+" leads)"}; b.scales.x.ticks.callback=v=>"₹"+v; b.plugins.valueLabels={fmt:v=>"₹"+v};
+  mk("cMetaCpl",{type:"bar",data:{labels:CP.map(x=>x[0]),datasets:[{data:CP.map(x=>x[1]),backgroundColor:CP.map(x=>x[1]<300?css("--s3"):x[1]<700?css("--s4"):css("--s2")),...bar,maxBarThickness:22}]},options:b});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>"₹"+Math.round(c.parsed.y).toLocaleString("en-IN")}; b.scales.y.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)}; b.layout.padding.top=18; b.scales.y.ticks.maxTicksLimit=4;
+  mk("cMetaMonth",{type:"bar",data:{labels:SCM,datasets:[{data:SC.meta,backgroundColor:css("--s7"),...bar,maxBarThickness:30}]},options:b});
+  // sales CRM
+  const CM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct*"], CE=[1033,557,272,647,290,575,812,720,682,33], CW=[0,0,90,157,94,117,121,104,96,9], CV=[0,0,5193927,3848776,1563578,2488606,6114643,3706365,3888623,81610];
+  b=base(); b.plugins.tooltip.displayColors=true; b.interaction={mode:"index",intersect:false}; b.plugins.tooltip.callbacks={label:c=>" "+c.dataset.label+": "+fmt(c.parsed.y)};
+  mk("cCrmMonthly",{type:"bar",data:{labels:CM,datasets:[{label:"Enquiries",data:CE,backgroundColor:css("--s1"),...bar,maxBarThickness:22},{label:"Bookings won",data:CW,backgroundColor:css("--s3"),...bar,maxBarThickness:22}]},options:b});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>"₹"+(c.parsed.y/1e5).toFixed(1)+" lakh won ("+CW[c.dataIndex]+" bookings)"}; b.scales.y.ticks.callback=v=>"₹"+short(v); b.plugins.valueLabels={fmt:v=>"₹"+short(v)}; b.layout.padding.top=18;
+  mk("cCrmValue",{type:"bar",data:{labels:CM,datasets:[{data:CV,backgroundColor:CV.map(v=>v===Math.max(...CV)?css("--accent"):css("--s3")),...bar}]},options:b});
+  b=base(); b.plugins.tooltip.callbacks={label:c=>c.parsed.y+"% of enquiries booked"}; b.scales.y.ticks.callback=v=>v+"%";
+  mk("cCrmConv",{type:"line",data:{labels:["Mar","Apr","May","Jun","Jul","Aug","Sep"],datasets:[{data:[33,24,32,20,15,14,14],borderColor:css("--s3"),backgroundColor:c=>grad(c.chart,css("--s3")),fill:true,borderWidth:2,tension:.3,pointRadius:4,pointBackgroundColor:css("--s3"),pointBorderColor:css("--surface"),pointBorderWidth:2}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" enquiries"};
+  mk("cCrmType",{type:"bar",data:{labels:["Room stay","Day outing","Not recorded","General enquiry","Birthday","Other function","Wedding","Corporate"],datasets:[{data:[2059,1540,884,640,154,91,82,54],backgroundColor:[css("--s1"),css("--s1"),css("--muted-series"),css("--muted-series"),css("--s1"),css("--s1"),css("--s1"),css("--s1")],...bar,maxBarThickness:14}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" enquiries ("+(c.parsed.x/5621*100).toFixed(1)+"%)"};
+  b=base(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.y)+" unique leads"}; b.plugins.valueLabels={fmt:short}; b.layout.padding.top=18;
+  mk("cMetaM",{type:"bar",data:{labels:["Jun","Jul","Aug","Sep"],datasets:[{data:[160,278,340,179],backgroundColor:css("--s7"),...bar,maxBarThickness:40}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" leads"};
+  mk("cMetaQ",{type:"bar",data:{labels:["Birthday","Corporate event","Wedding","Sunday brunch","Picnic","Honeymoon"],datasets:[{data:[407,308,221,137,79,14],backgroundColor:css("--s7"),...bar,maxBarThickness:18}]},options:b});
+  // reviews
+  const rv=[["Mango Mist 4.6★",65587],["Area 83 4.2★",25584],["RD's Nature Retreat 4.3★",20700],["Wild Valley 4.2★",9050],["Manipal County 4.0★",6096],["Gold Coins 3.9★",5413],["White Feather 4.3★",5033],["Radiant 4.0★",4295],["Temple Tree 4.4★",2386],["Nirantara 4.2★",1022]];
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" reviews"}; b.scales.x.ticks.callback=v=>(v/1000)+"k";
+  mk("cReviews",{type:"bar",data:{labels:rv.map(r=>r[0]),datasets:[{data:rv.map(r=>r[1]),backgroundColor:rv.map(r=>r[0].startsWith("Gold")?css("--accent"):css("--muted-series")),...bar,maxBarThickness:18}]},options:b});
+  // device
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" users"};
+  mk("cDevice",{type:"bar",data:{labels:["Mobile","Desktop","Tablet"],datasets:[{data:[26809,7142,28],backgroundColor:css("--s1"),...bar,maxBarThickness:22}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" users"};
+  mk("cCity",{type:"bar",data:{labels:["Bengaluru","Singapore (bots)","Chennai","Mumbai","Mysuru","Hyderabad"],datasets:[{data:[27492,1743,621,289,242,227],backgroundColor:[css("--s1"),css("--muted-series"),css("--s1"),css("--s1"),css("--s1"),css("--s1")],...bar,maxBarThickness:16}]},options:b});
+  b=hbase(); b.plugins.tooltip.callbacks={label:c=>fmt(c.parsed.x)+" views"};
+  mk("cPages",{type:"bar",data:{labels:["Home","/stay/","Day outing (old)","/day-outing/","Home (copy)","Sky Room","Pool suites"],datasets:[{data:[22006,4391,3278,1507,1339,1335,1233],backgroundColor:[css("--s1"),css("--s1"),css("--muted-series"),css("--s1"),css("--muted-series"),css("--s1"),css("--s1")],...bar,maxBarThickness:16}]},options:b});
+  highlight();
+}
+
+document.querySelectorAll(".tabbtn[data-v]").forEach(btn=>btn.onclick=()=>{spendView=btn.dataset.v;document.querySelectorAll(".tabbtn[data-v]").forEach(x=>x.setAttribute("aria-pressed",x===btn));drawSpend();});
+document.querySelectorAll(".tabbtn[data-g]").forEach(btn=>btn.onclick=()=>{gscView=btn.dataset.g;document.querySelectorAll(".tabbtn[data-g]").forEach(x=>x.setAttribute("aria-pressed",x===btn));drawGsc();});
+
+sel="All"; try{const s=localStorage.getItem("gc-month"); if(s && (s==="All"||SCM.includes(s))) sel=s;}catch(e){}
+renderMonths(); renderKPIs(); momTable();
+function ringSVG(pct,col,label){const r=44,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<svg viewBox="0 0 110 110" role="img" aria-label="${label}"><circle cx="55" cy="55" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="11"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 55 55)"/><text x="55" y="62" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="22" fill="var(--ink)">${label}</text></svg>`;}
+function buildInfographics(){
+  const F=[["Ad impressions + profile views","1.12M","var(--s1)",100],["Website visitors","33.9k","var(--s7)",82],["Enquiries (CRM)","5,621","var(--s5)",64],["Bookings won","788","var(--s3)",48],["Booking value","₹2.69Cr","var(--s4)",36]];
+  const fn=document.getElementById("funnel");
+  if(fn) fn.innerHTML=F.map((f,i)=>`<div class="fstep"><div class="fb" style="width:${isNarrow()?Math.max(f[3],72):Math.max(f[3],44)}%;background:${f[2]}"><span>${f[0]}</span><b class="num">${f[1]}</b></div>${i===2?'<div class="fr">14% of enquiries become bookings ↓</div>':i===1?'<div class="fr">+ 1,194 Meta leads and phone calls feed the CRM ↓</div>':''}</div>`).join("");
+  const R=[[14,"var(--s3)","14%","Enquiry → booking","788 of 5,621"],[74,"var(--s1)","74%","Web leads from organic","31 of 42 form leads"],[100,"var(--s7)","100%","Review replies","latest 100, was 80%"],[78,"var(--s4)","3.9★","Google rating","5,413 reviews; 4.0 needs 272 more 5★"]];
+  const rg=document.getElementById("rings");
+  if(rg) rg.innerHTML=R.map(r=>`<div class="ring">${ringSVG(r[0],r[1],r[2])}<b>${r[3]}</b><span>${r[4]}</span></div>`).join("");
+  const pc=document.getElementById("picto");
+  if(pc){const cols=[].concat(Array(82).fill("var(--s1)"),Array(8).fill("var(--s7)"),Array(5).fill("var(--s4)"),Array(5).fill("var(--muted-series)")); pc.innerHTML=cols.map(c=>`<i style="background:${c}"></i>`).join("");}
+}
+
+let booted=false, animMs=450;
+const TABS=["overview","roi","sales","meta","google","web","maps","actions"];
+function setTab(t,push){ if(!TABS.includes(t)) t="overview";
+  document.querySelectorAll("[data-tab]").forEach(el=>el.classList.toggle("on",el.dataset.tab===t));
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));
+  TABS.forEach(x=>document.body.classList.toggle("tab-"+x,x===t));
+  if(push){try{history.replaceState(null,"","#"+t)}catch(e){}; window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"});}
+  if(window.Chart&&booted) requestAnimationFrame(()=>{animMs=350; drawAll();});
+}
+function buildGrowth(){
+  const Q=[["Ad spend",172419,553134,true,v=>"₹"+short(v)],["Enquiries",1512,2214,false,fmt],["Bookings",368,321,false,fmt],["Booking value",7900960,13709631,false,v=>"₹"+short(v)],["Cost per booking",469,1723,true,v=>"₹"+fmt(v)],["Value per ₹1 of ads",45.8,24.8,false,v=>v+"×"]];
+  const el=document.getElementById("qgrid"); if(!el) return;
+  el.innerHTML=Q.map(([n,a,b,inv,f])=>{const mx=Math.max(a,b),pct=(b-a)/a*100,good=inv?pct<0:pct>0;
+    return `<div class="qc"><span class="qn">${n}</span><span class="qd ${good?"good":"bad"}">${pct>0?"▲":"▼"} ${Math.abs(pct).toFixed(0)}%</span>
+    <div class="qrow"><span>Q2</span><div class="qbar"><i style="width:${(a/mx*100).toFixed(1)}%;background:var(--muted-series)"></i></div><span class="qv">${f(a)}</span></div>
+    <div class="qrow"><span>Q3</span><div class="qbar"><i style="width:${(b/mx*100).toFixed(1)}%;background:${good?"var(--s3)":"var(--s2)"}"></i></div><span class="qv">${f(b)}</span></div></div>`;}).join("");
+}
+function buildEcon(){
+  const el=document.getElementById("econ"); if(!el) return;
+  const rows=[["Ad spend",SC.spend,v=>"₹"+short(v),"--s2",false],["Enquiries",SC.enq,fmt,"--s1",true],["Bookings",SC.bk,v=>v?fmt(v):"—","--s3",true],["Booking value",SC.won,v=>v?"₹"+short(v):"—","--s3",true],["Conversion",SC.conv,v=>v==null?"—":v+"%","--s7",true],["Spend per enquiry",SC.spend.map((v,i)=>Math.round(v/SC.enq[i])),v=>"₹"+fmt(v),"--s5",false],["Spend per booking",SC.cac,v=>v==null?"—":"₹"+fmt(v),"--s5",false]];
+  el.innerHTML=`<thead><tr><th>Metric</th>${SCM.map(m=>`<th class="n">${m}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>`+rows.map(([n,a,f,c,hi])=>{
+    const vals=a.filter(v=>v!=null&&v!==0), mx=Math.max(...vals), mn=Math.min(...vals);
+    const tot={"Ad spend":"₹7.78L","Enquiries":"5,621","Bookings":"788","Booking value":"₹2.69Cr","Conversion":"14%","Spend per enquiry":"₹138","Spend per booking":"₹988","Value per ₹1 of ads":"34.5×"}[n];
+    return `<tr><td>${n}</td>${a.map(v=>{if(v==null||v===0) return `<td class="n">${f(v)}</td>`; let t=(mx===mn)?.5:(v-mn)/(mx-mn); if(!hi) t=1-t; if(n==="Ad spend") t=(v-mn)/(mx-mn); return `<td class="n h" style="--hc:var(${c});--a:${(0.06+t*0.34).toFixed(2)}">${f(v)}</td>`;}).join("")}<td class="n"><b>${tot}</b></td></tr>`;}).join("")+"</tbody>";
+}
+
+function boot(){ if(window.Chart){ Chart.defaults.font.family="IBM Plex Sans"; Chart.register(valueLabels); booted=true; drawAll(); } buildInfographics(); buildGrowth(); buildEcon(); }
+let rz; window.addEventListener("resize",()=>{clearTimeout(rz); rz=setTimeout(()=>{if(window.Chart) drawAll(); buildInfographics();},250);});
+boot();
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.t,true));
+setTab((location.hash||"").slice(1)||"overview",false);
+window.addEventListener("hashchange",()=>setTab(location.hash.slice(1),false));
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>setTimeout(drawAll,50));}catch(e){}
+new MutationObserver(()=>setTimeout(drawAll,50)).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+</script>
